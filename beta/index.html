@@ -85,7 +85,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.9';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.7.0';</script>
 <script>
 (() => {
 'use strict';
@@ -602,7 +602,7 @@ const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','booby','macaw','vult
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
-const SRCN=32;let SRC=[];let BLOOM_PL=2;let bChain=[],bQ,bQc;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
+const SRCN=32;let SRC=[];let BLOOM_PL=2;let bChain=[],bQ,bQc,bP,bPc,bPok=false;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
   for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
@@ -646,7 +646,7 @@ function resize(){
     const mkB=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(2,w);c.height=Math.max(2,h);return c;};
     bChain=[mkB(cv.width>>1,cv.height>>1)];for(let i=0;i<2;i++){const p=bChain[i];bChain.push(mkB(p.width>>1,p.height>>1));}
     bA=bChain[2];const q=mkB(bA.width>>1,bA.height>>1);bB=mkB(q.width>>1,q.height>>1);bQ=q;
-    bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
+    bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bP=mkB(bA.width,bA.height);bPc=bP.getContext('2d');bPok=false;bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
   tcache.clear();buildPipeTex();buildBirdSprites();
@@ -1044,6 +1044,10 @@ function bloom(){
   // samples a few pixels per block, so thin pipe highlights popped in and out of the glow as pipes moved (flicker)
   let src=cv;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';x.drawImage(src,0,0,c.width,c.height);
     if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';src=c;});
+  // temporal stability: real glare changes smoothly, so blend with last frame's glow. This removes frame-to-frame jumping
+  // that some GPUs produce when resampling moving pipes/highlights; at 1/8 res the half-frame lag is invisible.
+  if(bPok){bAc.globalCompositeOperation='source-over';bAc.globalAlpha=.55;bAc.drawImage(bP,0,0);bAc.globalAlpha=1;}
+  bPc.globalCompositeOperation='copy';bPc.drawImage(bA,0,0);bPok=true;
   bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bQ.width,bQ.height);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bB.width,bB.height);bBc.globalCompositeOperation='source-over';
   ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='lighter';ctx.imageSmoothingEnabled=true;
   ctx.globalAlpha=.2;ctx.drawImage(bA,0,0,cv.width,cv.height);ctx.globalAlpha=.345;ctx.drawImage(bB,0,0,cv.width,cv.height);

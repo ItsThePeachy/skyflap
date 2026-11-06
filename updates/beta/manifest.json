@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.9",
-  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
+  "version": "1.7.0",
+  "notes": "Bloom glow is now temporally smoothed, removing the frame-to-frame flicker on the pipes some GPUs showed.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "64bbc016fdf27776d8baaa0acf3fa9ba952d41d71a14bf2031f9f881e56c6c41",
-    "size": 180655
+    "sha256": "d333441c9a1e7792a1c6833d5fe432e1657c4d36edb30fa6384ff56787b5b32e",
+    "size": 181158
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
+  "notes": "Bloom glow is now temporally smoothed, removing the frame-to-frame flicker on the pipes some GPUs showed.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
+  "notes": "Bloom glow is now temporally smoothed, removing the frame-to-frame flicker on the pipes some GPUs showed.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

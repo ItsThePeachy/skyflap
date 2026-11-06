@@ -1,1 +1,1 @@
-{"version": "1.6.9", "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly."}
+{"version": "1.7.0", "notes": "Bloom glow is now temporally smoothed, removing the frame-to-frame flicker on the pipes some GPUs showed."}
