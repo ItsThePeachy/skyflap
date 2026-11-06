@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.6",
-  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
+  "version": "1.6.7",
+  "notes": "Volumetric light shafts back to full quality every frame (the half-rate shafts stuttered). Keeps the pre-rendered sun glow and background fixes.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "7dcd3d08a44c15b574c7519134b8cac20362c69203896c700cbeaabbf5ecf4bd",
-    "size": 179968
+    "sha256": "409c693d25a277c07d35af7b970ca6c7c3fbf02328f04b114d5da7a8d2bc8343",
+    "size": 179565
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
+  "notes": "Volumetric light shafts back to full quality every frame (the half-rate shafts stuttered). Keeps the pre-rendered sun glow and background fixes.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
+  "notes": "Volumetric light shafts back to full quality every frame (the half-rate shafts stuttered). Keeps the pre-rendered sun glow and background fixes.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

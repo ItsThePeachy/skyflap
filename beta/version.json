@@ -1,1 +1,1 @@
-{"version": "1.6.6", "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame."}
+{"version": "1.6.7", "notes": "Volumetric light shafts back to full quality every frame (the half-rate shafts stuttered). Keeps the pre-rendered sun glow and background fixes."}
