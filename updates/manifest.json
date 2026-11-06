@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.5.4",
-  "notes": "Performance fix for the smooth pipes",
+  "version": "1.5.5",
+  "notes": "Fast pipes again, still smooth and shimmer-free",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "da7c65e0dc75ccd000a6862d1dc5234c526ef74d41f13d7a267baf659814bb22",
-    "size": 176753
+    "sha256": "4269ff0e7b2cbcd0cf4f1a08c7392c6e5508ce8dbab519ef77d7044f36f471ab",
+    "size": 175924
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
@@ -18,14 +18,14 @@
  "android": {
   "version": "1.5.0",
   "versionCode": 6,
-  "notes": "Performance fix for the smooth pipes",
+  "notes": "Fast pipes again, still smooth and shimmer-free",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
   "sha256": "11ec8fd317925f6e66fd6c54933834474e1828e09de82f5bbc3aff49a676c037",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.0",
-  "notes": "Performance fix for the smooth pipes",
+  "notes": "Fast pipes again, still smooth and shimmer-free",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
    "sha256": "3631894673b3db9700442c719e8b4810f9a0138e7cd631661596309709c4098d",
