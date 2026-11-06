@@ -1,0 +1,8 @@
+{
+  "name": "skyflap",
+  "productName": "Skyflap",
+  "version": "1.5.0",
+  "description": "Skyflap - a bird's journey",
+  "main": "main.js",
+  "license": "UNLICENSED"
+}
