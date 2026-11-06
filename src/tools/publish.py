@@ -7,7 +7,7 @@ u=os.path.join(R,'updates','beta') if BETA else os.path.join(R,'updates');os.mak
 def put(src,dst):
     shutil.copy(src,os.path.join(u,dst));b=open(src,'rb').read();return {'sha256':hashlib.sha256(b).hexdigest(),'size':len(b)}
 html=open('/home/claude/skyflap.html',encoding='utf8').read();GV=re.search(r"SKYFLAP_GAME_VERSION='([^']+)'",html).group(1)
-files={'index.html':put('/home/claude/skyflap.html','game/index.html'),'sounds.js':put('/home/claude/sounds.js','game/sounds.js')}
+files={'index.html':put('/home/claude/skyflap.html','game/index.html'),'sounds.js':put('/home/claude/sounds.js','game/sounds.js'),'calls.js':put('/home/claude/calls.js','game/calls.js')}
 apk=put('/home/claude/Skyflap.apk','android/Skyflap.apk');asar=put('/home/claude/exe/dist/Skyflap/resources/app.asar','windows/app.asar')
 m={'game':{'version':GV,'notes':NOTES,'minAndroid':6,'minWindows':'1.5.0','files':files},
    'android':dict(version=AV,versionCode=AC,notes=NOTES,url=RAW+'/android/Skyflap.apk',**apk),
@@ -24,14 +24,14 @@ def build_pwa():
     os.makedirs(W,exist_ok=True)
     if BETA: shutil.copytree(os.path.join(R,'icons'),os.path.join(W,'icons'),dirs_exist_ok=True)
     open(os.path.join(W,'index.html'),'w',encoding='utf8').write(h)
-    shutil.copy('/home/claude/sounds.js',os.path.join(W,'sounds.js'))
+    shutil.copy('/home/claude/sounds.js',os.path.join(W,'sounds.js'));shutil.copy('/home/claude/calls.js',os.path.join(W,'calls.js'))
     json.dump({'name':'Skyflap Test' if BETA else 'Skyflap','short_name':'Skyflap β' if BETA else 'Skyflap','description':"A bird's journey",'start_url':'./','scope':'./','display':'fullscreen',
                'orientation':'portrait','background_color':'#02040c','theme_color':'#02040c',
                'icons':[{'src':'icons/icon-192.png','sizes':'192x192','type':'image/png'},{'src':'icons/icon-512.png','sizes':'512x512','type':'image/png'},
                         {'src':'icons/maskable-512.png','sizes':'512x512','type':'image/png','purpose':'maskable'}]},
               open(os.path.join(W,'manifest.webmanifest'),'w'),indent=1)
     json.dump({'version':GV,'notes':NOTES},open(os.path.join(W,'version.json'),'w'))
-    files=['./','index.html','sounds.js','manifest.webmanifest','version.json','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png']
+    files=['./','index.html','sounds.js','calls.js','manifest.webmanifest','version.json','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png']
     sw=f"""// Skyflap offline service worker. Bump = new cache = update available.
 const CH='{'beta' if BETA else 'stable'}',V='{GV}-{hashlib.sha256(h.encode()).hexdigest()[:8]}',CACHE='skyflap-'+CH+'-'+V,FILES={json.dumps(files)};
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(f=>new Request(f,{{cache:'reload'}}))))));
