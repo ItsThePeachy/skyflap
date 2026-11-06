@@ -1,0 +1,34 @@
+{
+ "game": {
+  "version": "1.5.0",
+  "notes": "17 bird skins, forest sounds and the new update system",
+  "minAndroid": 6,
+  "minWindows": "1.5.0",
+  "files": {
+   "index.html": {
+    "sha256": "96318f0058de3781adf7636d3fc42438aebf701ec02f9b2695ce3808ea6f9ab3",
+    "size": 170926
+   },
+   "sounds.js": {
+    "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
+    "size": 1235864
+   }
+  }
+ },
+ "android": {
+  "version": "1.5.0",
+  "versionCode": 6,
+  "notes": "",
+  "url": "https://github.com/ItsThePeachy/skyflap/releases/download/v1.5.0/Skyflap.apk",
+  "sha256": "11ec8fd317925f6e66fd6c54933834474e1828e09de82f5bbc3aff49a676c037",
+  "size": 1394031
+ },
+ "windows": {
+  "version": "1.5.0",
+  "notes": "",
+  "url": "https://github.com/ItsThePeachy/skyflap/releases/download/v1.5.0/Skyflap-Windows.zip",
+  "page": "https://github.com/ItsThePeachy/skyflap/releases/latest",
+  "sha256": "f2c89ea7812783ef4334e55efdf0537880b330e7d21bf3380f95fadc0cca0140",
+  "size": 146753099
+ }
+}
