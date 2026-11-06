@@ -1,1 +1,1 @@
-{"version": "1.6.8", "notes": "Windows app updates rebuilt: they now download into your user folder and the app restarts itself (no helper script). Shows an error and Retry button if an update fails."}
+{"version": "1.7.2", "notes": "Pipe shimmer fixed: bloom glow no longer pulses on moving pipes, and the light shafts are drawn behind the pipes. Smoother, steadier glow overall."}
