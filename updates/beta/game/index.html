@@ -75,7 +75,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.3';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.4';</script>
 <script>
 (() => {
 'use strict';
@@ -730,7 +730,7 @@ function palette(p){if(p===_pk)return _pv;_pk=p;_pv=paletteCalc(p);return _pv;}
 function paletteCalc(p){
   const i=Math.floor(p)%4,j=(i+1)%4;let t=p-Math.floor(p);t=t<.55?0:(t-.55)/.45;t=t*t*(3-2*t);
   const A=PAL[i],B=PAL[j],o={};for(const k in A)o[k]=typeof A[k]==='number'?lerp(A[k],B[k],t):mixRGB(A[k],B[k],t);
-  o.lit1=mixRGB(o.f,'#ffe2b0',.1);o.lit2=mixRGB(o.n,'#ffe2b0',.08);o.hb=mixRGB(o.h,o.b,.35);return o;
+  o.lit1=mixRGB(o.f,'#ffe2b0',.1);o.lit2=mixRGB(o.n,'#ffe2b0',.08);o.hb=mixRGB(o.h,o.b,.35);o._i=i;o._j=j;o._t=t;o._f=p-Math.floor(p);return o;
 }
 
 // ---------- state ----------
@@ -878,16 +878,33 @@ const LAYERS=[
  {par:.36,y0:GY-74, y1:GY+6, key:P=>P.f+P.lit1+P.b, paint:(c,P)=>{pines(c,.36,15,GY-12,26,52,P.f,P.lit1,3,0);haze(c,GY-60,P,.3);}},
  {par:.62,y0:GY-114,y1:GY+10,key:P=>P.n+P.lit2, paint:(c,P)=>{pines(c,.62,26,GY+3,48,105,P.n,P.lit2,9,.4);}},
 ];
-function paintLayer(L,P,key){
-  const h=L.y1-L.y0;
-  if(!L.cv){L.cv=document.createElement('canvas');L.cv.width=Math.ceil((W+LPAD)*S);L.cv.height=Math.ceil(h*S);L.cx=L.cv.getContext('2d');}
-  const c=L.cx;c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,L.cv.width,L.cv.height);c.setTransform(S,0,0,S,0,-L.y0*S);
-  LW=W+LPAD;L.paint(c,P);L.sc=scroll;L.k=key;L.f=frame;
-}
+function layerCanvas(L,cv){if(!cv){cv=document.createElement('canvas');cv.width=Math.ceil((W+LPAD)*S);cv.height=Math.ceil((L.y1-L.y0)*S);}return cv;}
+function paintInto(L,cv,P){const c=cv.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);c.setTransform(S,0,0,S,0,-L.y0*S);LW=W+LPAD;L.paint(c,P);}
+function paintLayer(L,P,key){L.cv=layerCanvas(L,L.cv);paintInto(L,L.cv,P);L.sc=scroll;L.k=key;L.f=frame;}
+const PALK=[];const palKey=i=>PALK[i]||(PALK[i]=paletteCalc(i));
+// During a day/night transition the layer colours are a straight lerp between two keyframe palettes. Instead of
+// re-painting the procedural layers every few frames, the current image is kept as the 'from' keyframe, the 'to'
+// keyframe is painted once (ahead of time, one layer per frame) and the two are cross-faded: identical result.
+let lpFrame=-1,lbFrame=-1;
+function paintAt(L,cv,P,sc){const s0=scroll;scroll=sc;paintInto(L,cv,P);scroll=s0;}
 function drawLayer(c,L,P){
-  const key=L.key(P);let shift=(scroll-L.sc)*L.par;
-  if(L.gen!==layerGen){L.cv=null;L.gen=layerGen;}
+  if(L.gen!==layerGen){L.cv=L.B=L.M=null;L.gen=layerGen;}
+  const t=P._t,key=L.key(P);let shift=(scroll-L.sc)*L.par;
+  if(t>.002){
+    if(!L.cv||L.ai!==P._i||shift>LPAD-4||shift<0){         // (re)paint both keyframes at the current scroll
+      L.cv=layerCanvas(L,L.cv);paintInto(L,L.cv,palKey(P._i));L.sc=scroll;L.k=L.key(palKey(P._i));L.f=frame;L.ai=P._i;shift=0;L.B=null;}
+    if(!L.B||L.bj!==P._j||L.bsc!==L.sc){L.B=layerCanvas(L,L.B);paintAt(L,L.B,palKey(P._j),L.sc);L.bj=P._j;L.bsc=L.sc;L.mt=-1;}
+    if(!L.M){L.M=layerCanvas(L,null);L.Mx=L.M.getContext('2d');L.mt=-1;}
+    const d=Math.abs(t-L.mt);
+    if(L.mt<0||d>.03||(d>.004&&lbFrame!==frame)){lbFrame=frame;const m=L.Mx;m.setTransform(1,0,0,1,0,0);
+      m.globalCompositeOperation='copy';m.globalAlpha=1-t;m.drawImage(L.cv,0,0);m.globalCompositeOperation='lighter';m.globalAlpha=t;m.drawImage(L.B,0,0);
+      m.globalAlpha=1;m.globalCompositeOperation='source-over';L.mt=t;}
+    c.drawImage(L.M,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);return;}
+  if(L.M){ // transition finished: the 'to' keyframe is exactly the new palette -> it becomes the layer image
+    if(L.B&&L.bj===P._i&&L.bsc===L.sc){const o=L.cv;L.cv=L.B;L.B=o;L.k=key;L.f=frame;}L.M=L.Mx=null;L.ai=-1;}
   if(!L.cv||shift>LPAD-4||shift<0||(key!==L.k&&frame-L.f>=4)){paintLayer(L,P,key);shift=0;}
+  else if(P._f>.4&&L.k===L.key(palKey(P._i))&&(!L.B||L.bj!==P._j||L.bsc!==L.sc)&&lpFrame!==frame&&shift<LPAD*.6){
+    lpFrame=frame;L.B=layerCanvas(L,L.B);paintAt(L,L.B,palKey(P._j),L.sc);L.bj=P._j;L.bsc=L.sc;L.ai=P._i;} // prepare next keyframe early
   c.drawImage(L.cv,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);
 }
 function drawMotes(c,P,sun){

@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.3",
-  "notes": "New water splash sound. Also: 60 FPS limit fix, species bird calls.",
+  "version": "1.6.4",
+  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "fb048a83e12f176abb472898d1f0eb3dd6b3196e811cdb5b365be8ce1b92547b",
-    "size": 177061
+    "sha256": "a0e63db4706d8116fe35615d64fea0c70d8890e6069c302ef9361918a3f45ee0",
+    "size": 179070
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "New water splash sound. Also: 60 FPS limit fix, species bird calls.",
+  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "New water splash sound. Also: 60 FPS limit fix, species bird calls.",
+  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

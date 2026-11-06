@@ -1,1 +1,1 @@
-{"version": "1.6.3", "notes": "New water splash sound. Also: 60 FPS limit fix, species bird calls."}
+{"version": "1.6.4", "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops."}
