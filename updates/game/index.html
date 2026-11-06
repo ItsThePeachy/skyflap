@@ -74,7 +74,7 @@
 <div id="skins"><div class="panel"><div class="hd"><b>Skins</b><button class="x" id="skX" aria-label="Close">✕</button></div><div class="pv"><canvas id="skPv"></canvas><button class="eq" id="skE">Equip</button><div class="info"><div class="nm" id="skN"></div><div class="sci" id="skS"></div><div class="fact" id="skF"></div></div></div><div class="body"><div class="sec">Common birds</div><div class="grid" id="skG1"></div><div class="sec">Featured birds</div><div class="grid" id="skG2"></div></div></div></div>
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.5.5';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.5.6';</script>
 <script>
 (() => {
 'use strict';
@@ -108,7 +108,7 @@ const PRESETS={
 const LADDER=['ultra','high','med','low'],GFX=['res','vol','rays','bloom','flare','refl','clouds','motes','vignette','grain','glass'];
 const TOD={day:0,sunset:.9,night:2,dawn:3.1};
 let autoLvl=coarse?2:1,dprScale=1,Q={};
-let set=Object.assign({autoupd:1,pcres:'native',skin:'robin',preset:'auto',tod:'cycle',shake:1,fps:0,amb:'2',sfxv:'3',amb:'2',sfxv:'3',cap:coarse?'60':'max'},PRESETS[LADDER[autoLvl]]);
+let set=Object.assign({channel:'stable',betaUnlocked:0,autoupd:1,pcres:'native',skin:'robin',preset:'auto',tod:'cycle',shake:1,fps:0,amb:'2',sfxv:'3',amb:'2',sfxv:'3',cap:coarse?'60':'max'},PRESETS[LADDER[autoLvl]]);
 try{Object.assign(set,JSON.parse(localStorage.getItem('skyflap_settings')||'{}'));}catch(e){}
 const applyPreset=n=>{if(PRESETS[n])Object.assign(set,PRESETS[n]);};
 if(set.preset==='auto')applyPreset(LADDER[autoLvl]);else applyPreset(set.preset);
@@ -120,7 +120,7 @@ function computeQ(){const base=set.res==='native'?3:+set.res,l=+set.refl;
 computeQ();
 
 // ---------- static textures ----------
-const grime=document.createElement('canvas');grime.width=128;grime.height=512;let grimeSoft=null,grimeSoftPat=null;
+const grime=document.createElement('canvas');grime.width=128;grime.height=512;
 (()=>{const g=grime.getContext('2d');
   for(let i=0;i<90;i++){const x=Math.random()*128,y=Math.random()*512,l=20+Math.random()*140;
     const gr=g.createLinearGradient(0,y,0,y+l);gr.addColorStop(0,'rgba(50,30,12,0)');gr.addColorStop(.25,`rgba(50,30,12,${.05+Math.random()*.18})`);gr.addColorStop(1,'rgba(50,30,12,0)');
@@ -594,14 +594,13 @@ const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
-  for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.16,'#337a53'],[.23,'#7fcca0'],[.3,'#cdeedb'],[.37,'#78c69a'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
+  for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
 function buildPipeTex(){
-  const R=Math.min(S,3.5),ov=7,cw=PW+ov*2,cap=30,ao=18;
-  softGrime();const softPat=g=>{const pt=g.createPattern(grimeSoft,'repeat');if(pt.setTransform&&typeof DOMMatrix!=='undefined')pt.setTransform(new DOMMatrix([PW/64,0,0,2,0,0]));return pt;};
-  const body=mk(PW,640,R,g=>{g.fillStyle=pipeGrad(g,0,PW);g.fillRect(0,0,PW,640);g.globalAlpha=.7;g.fillStyle=softPat(g);g.fillRect(0,0,PW,640);g.globalAlpha=1;
+  const R=Math.min(S,2.4),ov=7,cw=PW+ov*2,cap=30,ao=18;
+  const body=mk(PW,640,R,g=>{g.fillStyle=pipeGrad(g,0,PW);g.fillRect(0,0,PW,640);g.globalAlpha=.9;g.fillStyle=g.createPattern(grime,'repeat');g.fillRect(0,0,PW,640);g.globalAlpha=1;
     for(let y=130;y<640;y+=130){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,y,PW,2);g.fillStyle='rgba(255,255,255,.12)';g.fillRect(0,y+2,PW,1);}});
   const capD=(g,y)=>{g.fillStyle=pipeGrad(g,0,cw);rrect(g,0,y,cw,cap,3);g.fill();
-    g.save();rrect(g,0,y,cw,cap,3);g.clip();g.globalAlpha=.5;g.fillStyle=softPat(g);g.fillRect(0,y,cw,cap);g.restore();
+    g.save();rrect(g,0,y,cw,cap,3);g.clip();g.globalAlpha=.6;g.fillStyle=g.createPattern(grime,'repeat');g.fillRect(0,y,cw,cap);g.restore();
     g.fillStyle='rgba(255,255,255,.3)';g.fillRect(2,y+1,cw-4,1.4);g.fillStyle='rgba(0,0,0,.45)';g.fillRect(0,y+cap-2.2,cw,2.2);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,y+cap*.5-.5,cw,1);
     for(const f of [.1,.36,.64,.9]){const bx=cw*f,by=y+cap*.5,gr=g.createRadialGradient(bx-.9,by-.9,.2,bx,by,3);gr.addColorStop(0,'#f6fff9');gr.addColorStop(.35,'#86bf9f');gr.addColorStop(1,'#0a2015');
       g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.arc(bx+.6,by+.8,2.8,0,7);g.fill();g.fillStyle=gr;g.beginPath();g.arc(bx,by,2.7,0,7);g.fill();}};
@@ -620,7 +619,6 @@ function buildBirdSprites(){
 const saProbe=document.createElement('div');saProbe.style.cssText='position:fixed;left:0;top:env(safe-area-inset-top,0px);height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden;pointer-events:none';document.body.appendChild(saProbe);
 let SAT=0,SAB=0;
 function resize(){
-  if(typeof pipeKit==='function')try{PG.clear();}catch(e){}
   computeQ();
   DPR=(window.skyflapDesktop&&set.pcres&&set.pcres!=='native')?clamp(+set.pcres/Math.max(1,innerHeight),.25,4)*dprScale:Math.min(window.devicePixelRatio||1,Q.dpr)*dprScale;
   cv.width=Math.round(innerWidth*DPR);cv.height=Math.round(innerHeight*DPR);
@@ -875,7 +873,7 @@ function drawLayer(c,L,P){
   const key=L.key(P);let shift=(scroll-L.sc)*L.par;
   if(L.gen!==layerGen){L.cv=null;L.gen=layerGen;}
   if(!L.cv||shift>LPAD-4||shift<0||(key!==L.k&&frame-L.f>=4)){paintLayer(L,P,key);shift=0;}
-  c.drawImage(L.cv,-shift,L.y0,W+LPAD,L.y1-L.y0);
+  c.drawImage(L.cv,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);
 }
 function drawMotes(c,P,sun){
   const day=sun.a*(1-P.star),n=Q.motes;
@@ -886,31 +884,11 @@ function drawMotes(c,P,sun){
   if(day<.05)return;c.fillStyle=`rgba(255,245,220,${.35*day})`;c.beginPath();
   for(let i=0;i<n;i++){const m=motes[i],x=((m.x*W*1.4-scroll*m.p*.3+Math.sin(time*.4+m.ph)*20)%(W+40)+W+40)%(W+40)-20,y=m.y+Math.sin(time*.6+m.ph)*14;c.moveTo(x+m.r,y);c.arc(x,y,m.r,0,7);}c.fill();
 }
-function softGrime(){
-  if(grimeSoftPat)return grimeSoftPat;
-  grimeSoft=document.createElement('canvas');grimeSoft.width=64;grimeSoft.height=256;const g=grimeSoft.getContext('2d');
-  g.imageSmoothingQuality='high';g.drawImage(grime,0,0,64,256);                 // half-res = low-pass
-  if(FILTER){const t=document.createElement('canvas');t.width=64;t.height=256;const tg=t.getContext('2d');tg.filter='blur(.8px)';tg.drawImage(grimeSoft,0,0);g.clearRect(0,0,64,256);g.drawImage(t,0,0);}
-  grimeSoftPat=ctx.createPattern(grimeSoft,'repeat');return grimeSoftPat;
-}
-// Pipes are drawn analytically every frame (gradients + simple shapes): identical at any sub-pixel position,
-// so they glide smoothly with the rest of the world and never shimmer. Gradients are built once (local
-// coordinates) and reused via translate, so a pipe costs only a handful of fills.
-const PG=new Map();
-function pipeKit(c){let k=PG.get(c);if(k)return k;
-  const ao=18,a=(y0,y1)=>{const g=c.createLinearGradient(0,y0,0,y1);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,0)');return g;};
-  k={body:pipeGrad(c,0,PW),cap:pipeGrad(c,-7,PW+7),aoUp:a(0,-ao),aoDn:a(0,ao),bolts:null};
-  const ov=7,cw=PW+ov*2,cap=30,sh=new Path2D(),base=new Path2D(),hi=new Path2D();
-  for(const f of [.1,.36,.64,.9]){const bx=-ov+cw*f,by=cap*.5;sh.moveTo(bx+3.2,by+.7);sh.arc(bx+.5,by+.7,2.7,0,7);base.moveTo(bx+2.5,by);base.arc(bx,by,2.5,0,7);hi.moveTo(bx+.4,by-.7);hi.arc(bx-.7,by-.7,1.1,0,7);}
-  const capShape=new Path2D(),r=3,X0=-ov,Y0=0;capShape.moveTo(X0+r,Y0);capShape.arcTo(X0+cw,Y0,X0+cw,Y0+cap,r);capShape.arcTo(X0+cw,Y0+cap,X0,Y0+cap,r);capShape.arcTo(X0,Y0+cap,X0,Y0,r);capShape.arcTo(X0,Y0,X0+cw,Y0,r);capShape.closePath();
-  k.bolts={sh,base,hi};k.capShape=capShape;PG.set(c,k);return k;}
-const grimeM=typeof DOMMatrix!=='undefined'?new DOMMatrix():null;
-function drawPipe(c,p,lite){
-  const x=p.x;if(x>W+20||x<-PW-20)return;
-  const top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,T=pipeTex,bw=T.body.width/T.R,cw=T.capT.width/T.R,ch=T.capT.height/T.R;
-  const body=(y0,y1)=>{const h=Math.min(y1-y0,640);if(h<=0)return;const sy=Math.round((p.seed*(640-h))|0)*T.R;c.drawImage(T.body,0,Math.round(sy),T.body.width,Math.round(h*T.R),x,y0,bw,h);};
-  body(-20,top-cap);c.drawImage(T.capT,x-ov,top-cap-ao,cw,ch);
-  body(bot+cap,GY+8);c.drawImage(T.capB,x-ov,bot,cw,ch);
+function drawPipe(c,p){
+  const x=p.x,top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,T=pipeTex;
+  const body=(y0,y1)=>{const h=Math.min(y1-y0,640);if(h<=0)return;const sy=(p.seed*(640-h))|0;c.drawImage(T.body,0,sy*T.R,T.body.width,h*T.R,x,y0,PW,h);};
+  body(-20,top-cap);c.drawImage(T.capT,x-ov,top-cap-ao,PW+ov*2,cap+ao);
+  body(bot+cap,GY+8);c.drawImage(T.capB,x-ov,bot,PW+ov*2,cap+ao);
 }
 function drawBird(c){
   const b=bird,dead=state==='dead',B=birdSpr;
@@ -978,7 +956,7 @@ function renderReflBand(P){
   X.drawImage(skyC,-2,-2,W+4,GY+16);
   drawClouds(X,false);drawLayer(X,LAYERS[0],P);drawClouds(X,true);
   for(let i=1;i<4;i++)drawLayer(X,LAYERS[i],P);
-  for(const p of pipes)drawPipe(X,p,true);
+  for(const p of pipes)drawPipe(X,p);
   if(bird.y>GY-GH-30)drawBird(X);
   if(volOut){X.globalCompositeOperation='lighter';X.globalAlpha=volA;X.drawImage(volOut,0,0,W,GY+10);X.globalAlpha=1;X.globalCompositeOperation='source-over';}
 }
@@ -1163,9 +1141,10 @@ const UI=[
  {k:'sound',label:'Sound',type:'tog'},
  {k:'amb',label:'Forest ambience',desc:'Birdsong, wind, the brook and crickets at night',type:'seg',opts:[['0','Off'],['1','Low'],['2','Med'],['3','High']]},
  {k:'sfxv',label:'Effects volume',desc:'Wing flaps, splashes, hits and chimes',type:'seg',opts:[['0','Off'],['1','Low'],['2','Med'],['3','High']]},
- {sec:'Updates',show:()=>!!host},
+ {sec:'Updates',show:()=>!!(host||IS_PWA)},
  {k:'autoupd',label:'Check for updates automatically',desc:'Small game updates download in the background and apply on the next start',type:'tog',show:()=>!!host},
- {updates:1,show:()=>!!host},
+ {k:'channel',label:'Update channel',desc:'Test builds are only offered to devices with this unlocked. Switching back to Stable returns to the stable version.',type:'seg',show:()=>!!(host||IS_PWA)&&+set.betaUnlocked,opts:[['stable','Stable'],['beta','Test']]},
+ {updates:1,show:()=>!!(host||IS_PWA)},
  {sec:'Sound credits'},
  {credits:1},
 ];
@@ -1173,14 +1152,14 @@ let setOpen=false,dsk=null;
 if(window.skyflapDesktop){window.skyflapDesktop.get().then(i=>{dsk=i;if(setOpen)buildSettings();}).catch(()=>{});
   window.skyflapDesktop.onChange(i=>{dsk=i;if(setOpen)buildSettings();});}
 const setEl=document.getElementById('set'),setB=document.getElementById('setB'),setS=document.getElementById('setS');
-const getV=k=>k==='sound'?(muted?0:1):k==='dmode'?dsk.mode:k==='dwin'?dsk.w+'x'+dsk.h:set[k];
+const getV=k=>k==='channel'&&IS_PWA?(IS_BETA_WEB?'beta':'stable'):k==='sound'?(muted?0:1):k==='dmode'?dsk.mode:k==='dwin'?dsk.w+'x'+dsk.h:set[k];
 function buildSettings(){
   let h='';
   for(const it of UI){
     if(it.show&&!it.show())continue;
     if(it.sec){h+=`<div class="sec">${it.sec}</div>`;continue;}
     if(it.updates){const u=updState||{},st={checking:'Checking\u2026',downloading:'Downloading'+(u.progress?` ${Math.round(u.progress*100)}%`:'\u2026'),ready:`Version ${u.ready&&u.ready.version} ready, restart to apply`,app:`App update ${u.app&&u.app.version} available`,uptodate:'You\u2019re up to date',error:'Couldn\u2019t check, '+(u.error||'offline?')}[u.status]||'';
-      h+=`<div class="row col"><div><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
+      h+=`<div class="row col"><div id="updVer"><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}${set.channel==='beta'||IS_BETA_WEB?' \u00b7 <b style="color:#ffb27a">TEST</b>':''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
     if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; splashes from a CC0 water pack.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
@@ -1191,6 +1170,8 @@ function buildSettings(){
 }
 function updateStatus(){setS.textContent=`Rendering ${cv.width}×${cv.height}`+(fpsVal?` · ${fpsVal} FPS`:'');}
 function changeSetting(k,v){
+  if(k==='channel'){if(IS_PWA){location.href=v==='beta'?(IS_BETA_WEB?'./':'beta/'):(IS_BETA_WEB?'../':'./');return;}
+    set.channel=v;saveSet();buildSettings();updCheck(true);return;}
   if(k==='dmode'){window.skyflapDesktop.set({mode:v}).then(i=>{dsk=i;buildSettings();});return;}
   if(k==='dwin'){const [w,h]=v.split('x').map(Number);window.skyflapDesktop.set({w,h}).then(i=>{dsk=i;buildSettings();});return;}
   if(k==='pcres'){set.pcres=v;dprScale=1;saveSet();resize();skyAge=99;buildSettings();return;}
@@ -1201,12 +1182,15 @@ function changeSetting(k,v){
   if(k==='tod'&&v!=='cycle')phase=TOD[v];
   saveSet();resize();skyAge=99;buildSettings();
 }
-setB.addEventListener('click',e=>{if(e.target.id==='updChk'){host.check();return;}if(e.target.id==='updRst'){host.restart();return;}if(e.target.id==='updIns'){host.install();return;}const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;
+let verTaps=0,verT=0;
+setB.addEventListener('click',e=>{
+  if(e.target.closest&&e.target.closest('#updVer')&&!+set.betaUnlocked){const n=performance.now();verTaps=n-verT<900?verTaps+1:1;verT=n;if(verTaps>=7){set.betaUnlocked=1;saveSet();buildSettings();}return;}
+  if(e.target.id==='updChk'){updCheck(false);return;}if(e.target.id==='updRst'){host.restart();return;}if(e.target.id==='updIns'){host.install();return;}const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;
   if(b.dataset.v!==undefined)changeSetting(k,b.dataset.v);else changeSetting(k,getV(k)?0:1);});
 function openSettings(){ensureAudio();if(state==='play')paused=true;setOpen=true;buildSettings();setEl.classList.add('open');}
 function closeSettings(){setOpen=false;setEl.classList.remove('open');}
 document.getElementById('setX').addEventListener('click',closeSettings);
-document.getElementById('setR').addEventListener('click',()=>{set=Object.assign({autoupd:1,pcres:'native',skin:set.skin,preset:'auto',tod:'cycle',shake:1,fps:0,cap:coarse?'60':'max'},PRESETS[LADDER[coarse?2:1]]);autoLvl=coarse?2:1;dprScale=1;muted=false;applyVolumes();saveSet();resize();skyAge=99;buildSettings();});
+document.getElementById('setR').addEventListener('click',()=>{set=Object.assign({channel:set.channel,betaUnlocked:set.betaUnlocked,autoupd:1,pcres:'native',skin:set.skin,preset:'auto',tod:'cycle',shake:1,fps:0,cap:coarse?'60':'max'},PRESETS[LADDER[coarse?2:1]]);autoLvl=coarse?2:1;dprScale=1;muted=false;applyVolumes();saveSet();resize();skyAge=99;buildSettings();});
 setEl.addEventListener('pointerdown',e=>{if(e.target===setEl)closeSettings();e.stopPropagation();});
 
 
@@ -1249,10 +1233,12 @@ skEl.addEventListener('pointerdown',e=>{if(e.target===skEl)closeSkins();e.stopPr
 
 if(location.hash==='#settings'){setTimeout(()=>{openSettings();history.replaceState(null,'',location.pathname);},250);}
 
-// ---------- updates (Android / Windows apps only) ----------
+// ---------- updates ----------
+const IS_PWA=!!window.SKYFLAP_PWA,IS_BETA_WEB=IS_PWA&&/\/beta\/?$/.test(location.pathname.replace(/index\.html$/,''));
+if(IS_BETA_WEB&&!+set.betaUnlocked){set.betaUnlocked=1;}
 const host=(()=>{
   const D=window.skyflapDesktop;
-  if(D&&D.update)return {info:()=>D.update.info(),check:()=>D.update.check(),restart:()=>D.update.restart(),install:()=>D.update.install(),on:f=>D.update.on(f)};
+  if(D&&D.update)return {info:()=>D.update.info(),check:(ch,f)=>D.update.check(ch,f),restart:()=>D.update.restart(),install:()=>D.update.install(),on:f=>D.update.on(f)};
   if(window.SKYFLAP_PWA&&'serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
     const st={appVersion:null,gameVersion:window.SKYFLAP_GAME_VERSION,status:'idle',ready:null,app:null,progress:0,error:''},L=[];let reg=null;
     const emit=()=>L.forEach(f=>f(Object.assign({},st)));
@@ -1265,9 +1251,10 @@ const host=(()=>{
       restart:async()=>{const w=reg&&reg.waiting;if(w)w.postMessage('skipWaiting');else location.reload();},install:async()=>{},on:f=>L.push(f)};
   }
   const N=window.SkyflapNative;
-  if(N)return {info:async()=>JSON.parse(N.info()),check:async()=>N.check(),restart:async()=>N.restart(),install:async()=>N.installApp(),on:f=>{window.__skyflapUpdate=x=>f(typeof x==='string'?JSON.parse(x):x);}};
+  if(N)return {info:async()=>JSON.parse(N.info()),check:async(ch,f)=>N.check2?N.check2(ch||'stable',!!f):N.check(),restart:async()=>N.restart(),install:async()=>N.installApp(),on:f=>{window.__skyflapUpdate=x=>f(typeof x==='string'?JSON.parse(x):x);}};
   return null;})();
 let updState=null,updHidden=false;
+function updCheck(force){if(!host)return;try{host.check(set.channel==='beta'?'beta':'stable',force);}catch(e){}}
 const updEl=document.getElementById('upd'),updT=document.getElementById('updT'),updGo=document.getElementById('updGo');
 const iosTip=window.SKYFLAP_PWA&&/iPhone|iPad|iPod/.test(navigator.userAgent)&&!navigator.standalone&&(()=>{try{return !localStorage.getItem('skyflap_tip');}catch(e){return true;}})();
 function updRender(){
@@ -1276,7 +1263,7 @@ function updRender(){
     updGo.onclick=()=>{updHidden=true;try{localStorage.setItem('skyflap_tip','1');}catch(e){}updRender();};updEl.classList.add('show');return;}
   if(u&&!updHidden&&(state!=='play'||paused)){
     if(u.status==='installing'){updT.innerHTML=`<b>Downloading app update</b> ${u.progress?Math.round(u.progress*100)+'%':''}`;updGo.style.display='none';show=true;}
-    else if(u.ready){updT.innerHTML=`<b>Skyflap ${u.ready.version}</b> is ready${u.ready.notes?'<br>'+u.ready.notes:''}`;updGo.textContent='Restart';updGo.onclick=()=>host.restart();updGo.style.display='';show=true;}
+    else if(u.ready){updT.innerHTML=`<b>Skyflap ${u.ready.version}${set.channel==='beta'?' (test)':''}</b> is ready${u.ready.notes?'<br>'+u.ready.notes:''}`;updGo.textContent='Restart';updGo.onclick=()=>host.restart();updGo.style.display='';show=true;}
     else if(u.app){updT.innerHTML=`<b>App update ${u.app.version}</b> available${u.app.notes?'<br>'+u.app.notes:''}`;updGo.textContent='Install';updGo.onclick=()=>host.install();updGo.style.display='';show=true;}
   }
   updEl.classList.toggle('show',show);
@@ -1287,15 +1274,15 @@ if(iosTip)setTimeout(updRender,600);
 if(host){
   host.on(s=>{updState=s;updRender();if(setOpen)buildSettings();});
   host.info().then(s=>{updState=s;updRender();}).catch(()=>{});
-  if(+set.autoupd)setTimeout(()=>{try{host.check();}catch(e){}},2500);
+  if(+set.autoupd)setTimeout(()=>updCheck(false),2500);
 }
 // ---------- loop with automatic quality scaling ----------
 let last=performance.now(),perfAcc=0,perfN=-60,fpsN=0,fpsT=0,fpsTxt='',fpsVal=0;
-let lastR=-1e9,dtS=0;
+let lastR=-1e9;
 function loop(now){
   requestAnimationFrame(loop);
   const cap=set.cap==='max'?0:+set.cap;if(cap&&now-lastR<1000/cap-2)return;lastR=now;
-  const raw=(now-last)/1000;last=now;if(!(dtS>0)||Math.abs(raw-dtS)>dtS*.5)dtS=raw;else dtS+=(raw-dtS)*.15;const dt=clamp(dtS,0,1/30);
+  const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
   update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
   if(host&&(frame&15)===0)updRender();

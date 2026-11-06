@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.5.5",
-  "notes": "Fast pipes again, still smooth and shimmer-free",
+  "version": "1.5.6",
+  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "4269ff0e7b2cbcd0cf4f1a08c7392c6e5508ce8dbab519ef77d7044f36f471ab",
-    "size": 175924
+    "sha256": "0f439d5dc595db18b9bd20c622c0a2a1ba9fb4ecec0ee2274c6699eee58b9809",
+    "size": 174910
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
@@ -16,20 +16,20 @@
   }
  },
  "android": {
-  "version": "1.5.0",
-  "versionCode": 6,
-  "notes": "Fast pipes again, still smooth and shimmer-free",
+  "version": "1.5.1",
+  "versionCode": 7,
+  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
-  "sha256": "11ec8fd317925f6e66fd6c54933834474e1828e09de82f5bbc3aff49a676c037",
+  "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
-  "version": "1.5.0",
-  "notes": "Fast pipes again, still smooth and shimmer-free",
+  "version": "1.5.1",
+  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
-   "sha256": "3631894673b3db9700442c719e8b4810f9a0138e7cd631661596309709c4098d",
-   "size": 1620323
+   "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",
+   "size": 1624589
   },
   "page": "https://github.com/ItsThePeachy/skyflap"
  }
