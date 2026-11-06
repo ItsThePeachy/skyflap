@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.5.0",
-  "notes": "17 bird skins, forest sounds and automatic updates",
+  "version": "1.5.1",
+  "notes": "iPhone home-screen app, notch and home-bar support",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "96318f0058de3781adf7636d3fc42438aebf701ec02f9b2695ce3808ea6f9ab3",
-    "size": 170926
+    "sha256": "c09badeefb2afadb83d0c838169f9da3bc0414c0ac5be8fd2beca3dc6ec69b5d",
+    "size": 173653
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
@@ -18,14 +18,14 @@
  "android": {
   "version": "1.5.0",
   "versionCode": 6,
-  "notes": "17 bird skins, forest sounds and automatic updates",
+  "notes": "iPhone home-screen app, notch and home-bar support",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
   "sha256": "11ec8fd317925f6e66fd6c54933834474e1828e09de82f5bbc3aff49a676c037",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.0",
-  "notes": "17 bird skins, forest sounds and automatic updates",
+  "notes": "iPhone home-screen app, notch and home-bar support",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
    "sha256": "3631894673b3db9700442c719e8b4810f9a0138e7cd631661596309709c4098d",
