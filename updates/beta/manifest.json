@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.8.0",
-  "notes": "16 new common birds: Blackbird, Great Tit, Blue Tit, Chaffinch, Starling, Wren, Barn Swallow, Swift, Magpie, Wood Pigeon, Collared Dove, Mallard, Mute Swan, Black-headed Gull, Buzzard and Kestrel - each with its own shape, calls and trivia. New trivia for Robin, Sparrow, Crow and Herring Gull.",
+  "version": "1.9.0",
+  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "7159d4cb29ae0a9e93ed444b21390d3853a929c19a3fba5fb737da7b3f5aec17",
-    "size": 199303
+    "sha256": "56d525185050f5032dbf882ff3550c463b17cccf5846eda140627870cbfb3651",
+    "size": 203683
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "16 new common birds: Blackbird, Great Tit, Blue Tit, Chaffinch, Starling, Wren, Barn Swallow, Swift, Magpie, Wood Pigeon, Collared Dove, Mallard, Mute Swan, Black-headed Gull, Buzzard and Kestrel - each with its own shape, calls and trivia. New trivia for Robin, Sparrow, Crow and Herring Gull.",
+  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "16 new common birds: Blackbird, Great Tit, Blue Tit, Chaffinch, Starling, Wren, Barn Swallow, Swift, Magpie, Wood Pigeon, Collared Dove, Mallard, Mute Swan, Black-headed Gull, Buzzard and Kestrel - each with its own shape, calls and trivia. New trivia for Robin, Sparrow, Crow and Herring Gull.",
+  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",
