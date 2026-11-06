@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.5",
-  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
+  "version": "1.6.6",
+  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "46e7fe40c1e8b72074dd835ed220365fcbaabdf6550a33048e1437e76070c3d7",
-    "size": 179537
+    "sha256": "7dcd3d08a44c15b574c7519134b8cac20362c69203896c700cbeaabbf5ecf4bd",
+    "size": 179968
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
+  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
+  "notes": "Volumetric light is about half as expensive: the light shafts are recomputed every other frame (at frame limits above 60), the glow is still drawn every frame.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

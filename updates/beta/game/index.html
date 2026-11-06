@@ -75,7 +75,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.5';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.6';</script>
 <script>
 (() => {
 'use strict';
@@ -954,9 +954,12 @@ function srcSprite(qi){let e=SRC[qi];if(e)return e;const sc=vA.width/W,[r,g_,b]=
         g.moveTo(Math.cos(a0)*r0,Math.sin(a0)*r0);g.lineTo(Math.cos(a0)*r1,Math.sin(a0)*r1);g.lineTo(Math.cos(a0+w)*r1,Math.sin(a0+w)*r1);g.lineTo(Math.cos(a0+w)*r0,Math.sin(a0+w)*r0);g.closePath();}
       g.fill();});return e;}
 function prebuildSrc(){if(!vA)return;for(let i=0;i<SRCN;i++)if(!SRC[i]){srcSprite(i);return;}}
+function fpsCapHigh(){return set.cap==='max'||+set.cap>60;}
 function volLight(c,P,sun){
-  volOut=null;if(!vA||sun.a<=0||sun.y>GY+30)return;const k=sun.a*(1-P.star);if(k<.03)return;
-  const sc=vA.width/W,X=vAx,[r,g_,b]=hex(sun.col);
+  if(!vA||sun.a<=0||sun.y>GY+30){volOut=null;return;}const k=sun.a*(1-P.star);if(k<.03){volOut=null;return;}
+  // the shafts live in a tiny, heavily blurred buffer: recomputing them every other frame is invisible and halves the cost
+  if(volOut&&(frame&1)&&fpsCapHigh()){volA=.42*k*(Q.bloom?.72:1);c.globalCompositeOperation='lighter';c.globalAlpha=volA;c.drawImage(volOut,0,0,W,GY+10);c.globalAlpha=1;c.globalCompositeOperation='source-over';return;}
+  volOut=null;const sc=vA.width/W,X=vAx,[r,g_,b]=hex(sun.col);
   X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='source-over';X.globalAlpha=1;X.clearRect(0,0,vA.width,vA.height);X.setTransform(sc,0,0,sc,0,0);
   // light source: pre-baked glow with ray gaps, rotated slowly
   srcSpr=srcSprite(Math.round(clamp(sun.e*1.5,0,1)*(SRCN-1)));
