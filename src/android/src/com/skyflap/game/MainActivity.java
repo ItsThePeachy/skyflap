@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
     String entryUrl() {
         String v = prefs.getString("gameVer", null);
         int min = prefs.getInt("gameMinAndroid", 0);
-        if (v != null && cmp(v, BUNDLED_GAME) > 0 && versionCode() >= min) {
+        if (v != null && (cmp(v, BUNDLED_GAME) > 0 || prefs.getBoolean("gameAnyVer", false)) && versionCode() >= min) {
             File f = new File(new File(gameRoot(), v), "index.html");
             if (f.exists() && new File(f.getParentFile(), "sounds.js").exists()) { loadedGame = v; return Uri.fromFile(f).toString(); }
         }
@@ -151,19 +151,23 @@ public class MainActivity extends Activity {
     static void delete(File f) { if (f.isDirectory()) { File[] l = f.listFiles(); if (l != null) for (File x : l) delete(x); } f.delete(); }
 
     // ---------- update check: game files (hot) + app (APK) ----------
-    void startCheck() {
+    void startCheck() { startCheck("stable", false); }
+    void startCheck(final String channel, final boolean force) {
         if (busy || UPDATE_BASE.startsWith("__")) return;
+        final String BASE = UPDATE_BASE + ("beta".equals(channel) ? "/beta" : "");
+        if (force) readyVer = null;
         busy = true; status = "checking"; error = ""; push();
         new Thread(new Runnable() { public void run() {
             try {
-                JSONObject m = new JSONObject(new String(fetch(UPDATE_BASE + "/manifest.json?t=" + System.currentTimeMillis(), false), "UTF-8"));
+                JSONObject m = new JSONObject(new String(fetch(BASE + "/manifest.json?t=" + System.currentTimeMillis(), false), "UTF-8"));
                 JSONObject A = m.optJSONObject("android");
                 if (A != null && A.optInt("versionCode", 0) > versionCode()) {
                     appVer = A.optString("version", "?"); appNotes = A.optString("notes", ""); appUrl = A.optString("url", null); appSha = A.optString("sha256", "");
                 } else appVer = null;
                 JSONObject G = m.optJSONObject("game");
                 String have = readyVer != null ? readyVer : loadedGame;
-                if (G != null && cmp(G.getString("version"), have) > 0 && versionCode() >= G.optInt("minAndroid", 0)) {
+                int c0 = G != null ? cmp(G.getString("version"), have) : 0;
+                if (G != null && (force ? c0 != 0 : c0 > 0) && versionCode() >= G.optInt("minAndroid", 0)) {
                     String v = G.getString("version");
                     status = "downloading"; progress = 0; push();
                     File dir = new File(gameRoot(), v), tmp = new File(gameRoot(), v + ".part");
@@ -175,14 +179,14 @@ public class MainActivity extends Activity {
                     for (int i = 0; i < names.length(); i++) {
                         String name = names.getString(i);
                         JSONObject f = files.getJSONObject(name);
-                        byte[] b = fetch(UPDATE_BASE + "/game/" + name + "?v=" + v, false);
+                        byte[] b = fetch(BASE + "/game/" + name + "?v=" + v, false);
                         if (!sha256(b).equals(f.getString("sha256"))) throw new IOException("checksum mismatch");
                         write(new File(tmp, name), b);
                         done += Math.max(1, f.optLong("size", 1)); progress = (double) done / total; push();
                     }
                     delete(dir);
                     if (!tmp.renameTo(dir)) throw new IOException("could not save update");
-                    prefs.edit().putString("gameVer", v).putInt("gameMinAndroid", G.optInt("minAndroid", 0)).apply();
+                    prefs.edit().putString("gameVer", v).putInt("gameMinAndroid", G.optInt("minAndroid", 0)).putBoolean("gameAnyVer", cmp(v, BUNDLED_GAME) <= 0).apply();
                     File[] old = gameRoot().listFiles();
                     if (old != null) for (File x : old) if (!x.getName().equals(v) && !x.getName().equals(loadedGame)) delete(x);
                     readyVer = v; readyNotes = G.optString("notes", "");
@@ -233,6 +237,7 @@ public class MainActivity extends Activity {
     class Bridge {
         @JavascriptInterface public String info() { return stateJson(); }
         @JavascriptInterface public void check() { startCheck(); }
+        @JavascriptInterface public void check2(String channel, boolean force) { startCheck(channel, force); }
         @JavascriptInterface public void installApp() { startInstall(); }
         @JavascriptInterface public void restart() {
             runOnUiThread(new Runnable() { public void run() { readyVer = null; status = "idle"; web.loadUrl(entryUrl()); } });

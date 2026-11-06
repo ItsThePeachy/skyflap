@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld('skyflapDesktop', {
   onChange: (fn) => ipcRenderer.on('sd:changed', (_e, info) => fn(info)),
   update: {
     info: () => ipcRenderer.invoke('up:info'),
-    check: () => ipcRenderer.invoke('up:check'),
+    check: (ch, force) => ipcRenderer.invoke('up:check', ch, force),
     restart: () => ipcRenderer.invoke('up:restart'),
     install: () => ipcRenderer.invoke('up:install'),
     on: (fn) => ipcRenderer.on('up:state', (_e, s) => fn(s))

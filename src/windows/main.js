@@ -83,7 +83,7 @@ function bundledGameVersion() { try { const m = fs.readFileSync(path.join(__dirn
 function installedGame() {
   try { const c = JSON.parse(fs.readFileSync(path.join(gameRoot(), 'current.json'), 'utf8'));
     const dir = path.join(gameRoot(), c.version);
-    if (cmpVer(c.version, bundledGameVersion()) > 0 && cmpVer(app.getVersion(), c.minWindows || '0') >= 0 && fs.existsSync(path.join(dir, 'index.html'))) return { version: c.version, dir };
+    if ((cmpVer(c.version, bundledGameVersion()) > 0 || c.bundled) && cmpVer(app.getVersion(), c.minWindows || '0') >= 0 && fs.existsSync(path.join(dir, 'index.html'))) return { version: c.version, dir };
   } catch (e) {}
   return null;
 }
@@ -100,26 +100,29 @@ async function fetchBuf(url, onProgress) {
 }
 const sha256 = b => crypto.createHash('sha256').update(b).digest('hex');
 let checking = false;
-async function checkUpdates() {
+async function checkUpdates(channel, force) {
   if (checking || UPDATE_BASE.startsWith('__')) return up;
+  const BASE = UPDATE_BASE + (channel === 'beta' ? '/beta' : '');
+  if (force) up.ready = null;
   checking = true; up.status = 'checking'; up.error = ''; sendUp();
   try {
-    manifest = JSON.parse((await fetchBuf(UPDATE_BASE + '/manifest.json?t=' + Date.now())).toString('utf8'));
+    manifest = JSON.parse((await fetchBuf(BASE + '/manifest.json?t=' + Date.now())).toString('utf8'));
     const W = manifest.windows;
     up.app = W && cmpVer(W.version, app.getVersion()) > 0 ? { version: W.version, notes: W.notes || '', size: W.size || 0 } : null;
     const G = manifest.game, have = up.ready ? up.ready.version : loadedGame;
-    if (G && cmpVer(G.version, have) > 0 && cmpVer(app.getVersion(), G.minWindows || '0') >= 0) {
+    const newer = force ? cmpVer(G && G.version, have) !== 0 : cmpVer(G && G.version, have) > 0;
+    if (G && newer && cmpVer(app.getVersion(), G.minWindows || '0') >= 0) {
       up.status = 'downloading'; up.progress = 0; sendUp();
       const dir = path.join(gameRoot(), G.version), tmp = dir + '.part';
       fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
       const names = Object.keys(G.files), sizes = names.map(n => G.files[n].size || 1), total = sizes.reduce((a, b) => a + b, 0); let done = 0;
       for (let i = 0; i < names.length; i++) {
-        const n = names[i], buf = await fetchBuf(UPDATE_BASE + '/game/' + n + '?v=' + G.version, p => { up.progress = (done + p * sizes[i]) / total; sendUp(); });
+        const n = names[i], buf = await fetchBuf(BASE + '/game/' + n + '?v=' + G.version, p => { up.progress = (done + p * sizes[i]) / total; sendUp(); });
         if (sha256(buf) !== G.files[n].sha256) throw new Error('checksum mismatch in ' + n);
         fs.writeFileSync(path.join(tmp, n), buf); done += sizes[i];
       }
       fs.rmSync(dir, { recursive: true, force: true }); fs.renameSync(tmp, dir);
-      fs.writeFileSync(path.join(gameRoot(), 'current.json'), JSON.stringify({ version: G.version, minWindows: G.minWindows || '0' }));
+      fs.writeFileSync(path.join(gameRoot(), 'current.json'), JSON.stringify({ version: G.version, minWindows: G.minWindows || '0', bundled: cmpVer(G.version, bundledGameVersion()) <= 0 }));
       for (const d of fs.readdirSync(gameRoot())) if (d !== G.version && d !== loadedGame && d !== 'current.json') fs.rmSync(path.join(gameRoot(), d), { recursive: true, force: true });
       up.ready = { version: G.version, notes: G.notes || '' };
     }
@@ -153,7 +156,7 @@ async function installApp() {
   return up;
 }
 ipcMain.handle('up:info', () => up);
-ipcMain.handle('up:check', () => checkUpdates());
+ipcMain.handle('up:check', (e, ch, force) => checkUpdates(ch, force));
 ipcMain.handle('up:restart', () => restartGame());
 ipcMain.handle('up:install', () => installApp());
 
