@@ -75,7 +75,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.2';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.3';</script>
 <script>
 (() => {
 'use strict';
@@ -713,7 +713,7 @@ const sfx={
   milestone(){[1175,1480,1760,2349].forEach((f,i)=>tone(f,f,.14,'sine',.07,i*.07));},
   hit(){play('thunk',1,rnd(.8,.95));nz(.2,.35,600);tone(160,50,.3,'sine',.16);},
   splash(){if(!play('splash1',1,rnd(.97,1.01))){nz(.6,.45,1400);nz(.3,.3,400);}},
-  drop(){play('splash1',.16,rnd(1.6,2.2));},
+  drop(){const f=rnd(900,1600);tone(f,f*1.7,.035,'sine',.025);},
   swoosh(){if(!play('swish',.7,rnd(.9,1)))nz(.35,.12,900,'bandpass');},
   best(){[1047,1319,1568,2093].forEach((f,i)=>tone(f,f,.2,'sine',.06,.15+i*.1));}
 };
@@ -1175,7 +1175,7 @@ function buildSettings(){
     if(it.sec){h+=`<div class="sec">${it.sec}</div>`;continue;}
     if(it.updates){const u=updState||{},st={checking:'Checking\u2026',downloading:'Downloading'+(u.progress?` ${Math.round(u.progress*100)}%`:'\u2026'),ready:`Version ${u.ready&&u.ready.version} ready, restart to apply`,app:`App update ${u.app&&u.app.version} available`,uptodate:'You\u2019re up to date',error:'Couldn\u2019t check, '+(u.error||'offline?')}[u.status]||'';
       h+=`<div class="row col"><div id="updVer"><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}${set.channel==='beta'||IS_BETA_WEB?' \u00b7 <b style="color:#ffb27a">TEST</b>':''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
-    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; splash from a CC0 water pack. Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
+    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; water splash: custom sound supplied by the player. Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
     else{const cur=it.k==='preset'&&v==='custom'?'<span class="tag l">CUSTOM</span>':'';

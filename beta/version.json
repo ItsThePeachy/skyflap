@@ -1,1 +1,1 @@
-{"version": "1.6.2", "notes": "Frame rate limit fixed: 60 now really gives 60 FPS on 90/144 Hz screens (was 45/48), and auto quality no longer lowers graphics because of it. Includes species bird calls and the deep splash."}
+{"version": "1.6.3", "notes": "New water splash sound. Also: 60 FPS limit fix, species bird calls."}
