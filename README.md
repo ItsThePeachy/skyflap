@@ -2,6 +2,10 @@
 
 A Flappy-Bird-style game with 17 real bird species, volumetric lighting, water reflections and forest ambience.
 
+## Play
+- **iPhone / iPad:** open **https://itsthepeachy.github.io/skyflap/** in Safari → Share → **Add to Home Screen**. After the first open it runs fully offline and updates itself.
+- **Any browser:** same link.
+
 ## Download
 - **Android:** [Skyflap.apk](updates/android/Skyflap.apk) (tap *View raw* / *Download*).
 - **Windows:** the full Skyflap-Windows.zip is shared directly (it's too big for a repo file). After the first install, the app updates itself from this repo.
