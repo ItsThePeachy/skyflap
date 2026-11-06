@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Menu, shell, screen, ipcMain, net } = require('electron');
-const path = require('path'), fs = require('fs'), os = require('os'), crypto = require('crypto'), { spawn } = require('child_process');
+const path = require('path'), fs = require('fs'), os = require('os'), crypto = require('crypto');
 const UPDATE_BASE = process.env.SKYFLAP_UPDATE_BASE || '__UPDATE_BASE__';
+const BASE_DIR = global.SKYFLAP_BASE || __dirname, CODE_DIR = __dirname;   // install folder vs. folder this code runs from
+const APPVER = global.SKYFLAP_APPVER || app.getVersion();
 
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
@@ -30,9 +32,9 @@ function createWindow() {
   const [w, h] = cfg.w && cfg.h ? [cfg.w, cfg.h] : defaultSize();
   const opts = {
     width: w, height: h, useContentSize: true, minWidth: 320, minHeight: 480,
-    backgroundColor: '#02040c', title: 'Skyflap', icon: path.join(__dirname, 'icon.png'),
+    backgroundColor: '#02040c', title: 'Skyflap', icon: path.join(BASE_DIR, 'icon.png'),
     autoHideMenuBar: true, show: false, frame: !borderless,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, sandbox: true, spellcheck: false }
+    webPreferences: { preload: path.join(CODE_DIR, 'preload.js'), contextIsolation: true, sandbox: true, spellcheck: false }
   };
   if (borderless) {
     const b = disp.bounds;
@@ -48,6 +50,7 @@ function createWindow() {
     w2.show(); w2.focus();
     if (old && !old.isDestroyed()) old.destroy();
   });
+  w2.webContents.once('did-finish-load', () => { if (global.SKYFLAP_BOOT) { try { fs.writeFileSync(global.SKYFLAP_BOOT, JSON.stringify({ v: APPVER, fails: 0 })); } catch (e) {} } });
   w2.loadFile(gameEntry(), reopenSettings ? { hash: 'settings' } : undefined);
   reopenSettings = false;
 
@@ -79,17 +82,17 @@ function applyMode(mode) {
 const cmpVer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
   for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0 ? 1 : -1; } return 0; };
 const gameRoot = () => path.join(app.getPath('userData'), 'game');
-function bundledGameVersion() { try { const m = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8').slice(0, 200000).match(/SKYFLAP_GAME_VERSION='([^']+)'/); return m ? m[1] : '0'; } catch (e) { return '0'; } }
+function bundledGameVersion() { try { const m = fs.readFileSync(path.join(BASE_DIR, 'index.html'), 'utf8').slice(0, 200000).match(/SKYFLAP_GAME_VERSION='([^']+)'/); return m ? m[1] : '0'; } catch (e) { return '0'; } }
 function installedGame() {
   try { const c = JSON.parse(fs.readFileSync(path.join(gameRoot(), 'current.json'), 'utf8'));
     const dir = path.join(gameRoot(), c.version);
-    if ((cmpVer(c.version, bundledGameVersion()) > 0 || c.bundled) && cmpVer(app.getVersion(), c.minWindows || '0') >= 0 && fs.existsSync(path.join(dir, 'index.html'))) return { version: c.version, dir };
+    if ((cmpVer(c.version, bundledGameVersion()) > 0 || c.bundled) && cmpVer(APPVER, c.minWindows || '0') >= 0 && fs.existsSync(path.join(dir, 'index.html'))) return { version: c.version, dir };
   } catch (e) {}
   return null;
 }
-const up = { appVersion: app.getVersion(), gameVersion: '0', status: 'idle', ready: null, app: null, progress: 0, error: '' };
+const up = { appVersion: APPVER, gameVersion: '0', status: 'idle', ready: null, app: null, progress: 0, error: '' };
 let manifest = null, loadedGame = null;
-function gameEntry() { const g = installedGame(); loadedGame = g ? g.version : bundledGameVersion(); up.gameVersion = loadedGame; return g ? path.join(g.dir, 'index.html') : path.join(__dirname, 'index.html'); }
+function gameEntry() { const g = installedGame(); loadedGame = g ? g.version : bundledGameVersion(); up.gameVersion = loadedGame; return g ? path.join(g.dir, 'index.html') : path.join(BASE_DIR, 'index.html'); }
 function sendUp() { if (win && !win.isDestroyed()) win.webContents.send('up:state', up); }
 async function fetchBuf(url, onProgress) {
   const r = await net.fetch(url, { cache: 'no-store' });
@@ -108,10 +111,10 @@ async function checkUpdates(channel, force) {
   try {
     manifest = JSON.parse((await fetchBuf(BASE + '/manifest.json?t=' + Date.now())).toString('utf8'));
     const W = manifest.windows;
-    up.app = W && cmpVer(W.version, app.getVersion()) > 0 ? { version: W.version, notes: W.notes || '', size: W.size || 0 } : null;
+    up.app = W && cmpVer(W.version, APPVER) > 0 ? { version: W.version, notes: W.notes || '', size: W.size || 0 } : null;
     const G = manifest.game, have = up.ready ? up.ready.version : loadedGame;
     const newer = force ? cmpVer(G && G.version, have) !== 0 : cmpVer(G && G.version, have) > 0;
-    if (G && newer && cmpVer(app.getVersion(), G.minWindows || '0') >= 0) {
+    if (G && newer && cmpVer(APPVER, G.minWindows || '0') >= 0) {
       up.status = 'downloading'; up.progress = 0; sendUp();
       const dir = path.join(gameRoot(), G.version), tmp = dir + '.part';
       fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
@@ -131,27 +134,26 @@ async function checkUpdates(channel, force) {
   checking = false; sendUp(); return up;
 }
 function restartGame() { if (win) { up.ready = null; up.status = 'idle'; win.loadFile(gameEntry()); } }
+const codeRoot = () => path.join(app.getPath('userData'), 'appcode');
 async function installApp() {
   if (!manifest || !manifest.windows || !up.app) return up;
-  const W = manifest.windows, resDir = process.resourcesPath, target = path.join(resDir, 'app.asar');
-  const ofs = require('original-fs');   // plain fs: never treat .asar files as archives
-  let writable = true; try { const t = path.join(resDir, '.skyflap-write-test'); ofs.writeFileSync(t, 'x'); ofs.unlinkSync(t); } catch (e) { writable = false; }
-  if (process.platform !== 'win32' || !writable || !W.asar) { shell.openExternal(W.page || 'https://github.com'); return up; }
+  const W = manifest.windows, C = W.code;
+  if (!C || !C.files || !global.SKYFLAP_BASE || cmpVer(process.versions.electron, C.minElectron || '0') < 0) { shell.openExternal(W.page || 'https://github.com'); return up; }
   try {
     up.status = 'installing'; up.progress = 0; sendUp();
-    const buf = await fetchBuf(W.asar.url + '?v=' + W.version, p => { up.progress = p; sendUp(); });
-    if (sha256(buf) !== W.asar.sha256) throw new Error('checksum mismatch');
-    const work = ofs.mkdtempSync(path.join(os.tmpdir(), 'skyflap-upd-')), bin = path.join(work, 'app-update.bin'), ps1 = path.join(work, 'apply.ps1');
-    ofs.writeFileSync(bin, buf);
-    const q = s => "'" + s.replace(/'/g, "''") + "'";
-    ofs.writeFileSync(ps1, [
-      `Wait-Process -Id ${process.pid} -ErrorAction SilentlyContinue`, 'Start-Sleep -Seconds 1',
-      'for ($i = 0; $i -lt 15; $i++) { try { Copy-Item -LiteralPath ' + q(bin) + ' -Destination ' + q(target) + ' -Force -ErrorAction Stop; break } catch { Start-Sleep -Seconds 1 } }',
-      `Start-Process -FilePath ${q(process.execPath)}`,
-      `Remove-Item -LiteralPath ${q(work)} -Recurse -Force -ErrorAction SilentlyContinue`
-    ].join('\r\n'));
-    spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ps1], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
-    setTimeout(() => app.quit(), 300);
+    const dir = path.join(codeRoot(), W.version), tmp = dir + '.part';
+    fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
+    const names = Object.keys(C.files);
+    for (let i = 0; i < names.length; i++) {
+      const n = names[i], f = C.files[n], buf = await fetchBuf(f.url + '?v=' + W.version, p => { up.progress = (i + p) / names.length; sendUp(); });
+      if (sha256(buf) !== f.sha256) throw new Error('checksum mismatch in ' + n);
+      fs.writeFileSync(path.join(tmp, n), buf);
+    }
+    fs.rmSync(dir, { recursive: true, force: true }); fs.renameSync(tmp, dir);
+    fs.writeFileSync(path.join(codeRoot(), 'current.json'), JSON.stringify({ version: W.version }));
+    for (const d of fs.readdirSync(codeRoot())) if (d !== W.version && d !== APPVER && !d.endsWith('.json')) fs.rmSync(path.join(codeRoot(), d), { recursive: true, force: true });
+    up.status = 'restarting'; sendUp();
+    setTimeout(() => { app.relaunch(); app.exit(0); }, 250);
   } catch (e) { up.status = 'error'; up.error = String(e.message || e).slice(0, 80); sendUp(); }
   return up;
 }

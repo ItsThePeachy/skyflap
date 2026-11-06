@@ -9,9 +9,11 @@ def put(src,dst):
 html=open('/home/claude/skyflap.html',encoding='utf8').read();GV=re.search(r"SKYFLAP_GAME_VERSION='([^']+)'",html).group(1)
 files={'index.html':put('/home/claude/skyflap.html','game/index.html'),'sounds.js':put('/home/claude/sounds.js','game/sounds.js'),'calls.js':put('/home/claude/calls.js','game/calls.js')}
 apk=put('/home/claude/Skyflap.apk','android/Skyflap.apk');asar=put('/home/claude/exe/dist/Skyflap/resources/app.asar','windows/app.asar')
+os.makedirs(u+'/windows/code',exist_ok=True)
+code={n:dict(url=RAW+'/windows/code/'+n,**put('/home/claude/exe/stage/'+n,'windows/code/'+n)) for n in ('main.js','preload.js')}
 m={'game':{'version':GV,'notes':NOTES,'minAndroid':6,'minWindows':'1.5.0','files':files},
    'android':dict(version=AV,versionCode=AC,notes=NOTES,url=RAW+'/android/Skyflap.apk',**apk),
-   'windows':{'version':WV,'notes':NOTES,'asar':dict(url=RAW+'/windows/app.asar',**asar),'page':'https://github.com/ItsThePeachy/skyflap'}}
+   'windows':{'version':WV,'notes':NOTES,'asar':dict(url=RAW+'/windows/app.asar',**asar),'code':{'minElectron':'0','files':code},'page':'https://github.com/ItsThePeachy/skyflap'}}
 json.dump(m,open(u+'/manifest.json','w'),indent=1)
 # ---------- iPhone / web: installable offline web app at the repo root (GitHub Pages) ----------
 def build_pwa():
