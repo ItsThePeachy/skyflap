@@ -1,31 +1,35 @@
 {
  "game": {
-  "version": "1.5.6",
-  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
+  "version": "1.6.7",
+  "notes": "Every bird now has its own species calls for a new highscore, every 10 points and crashing. New deep water splash. 60 FPS limit fixed on 90/144 Hz screens. Much smoother day/night cycle: the sun glow and background are pre-rendered instead of being redrawn while the light changes.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "0f439d5dc595db18b9bd20c622c0a2a1ba9fb4ecec0ee2274c6699eee58b9809",
-    "size": 174910
+    "sha256": "409c693d25a277c07d35af7b970ca6c7c3fbf02328f04b114d5da7a8d2bc8343",
+    "size": 179565
    },
    "sounds.js": {
-    "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
-    "size": 1235864
+    "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
+    "size": 1229030
+   },
+   "calls.js": {
+    "sha256": "745e862a2066e3b565c34aaf472150a7e770e8592d8ae63fccfbe9b8128e6ee7",
+    "size": 957161
    }
   }
  },
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
+  "notes": "Every bird now has its own species calls for a new highscore, every 10 points and crashing. New deep water splash. 60 FPS limit fixed on 90/144 Hz screens. Much smoother day/night cycle: the sun glow and background are pre-rendered instead of being redrawn while the light changes.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Back to the 1.5.1 pipes; adds the private test channel",
+  "notes": "Every bird now has its own species calls for a new highscore, every 10 points and crashing. New deep water splash. 60 FPS limit fixed on 90/144 Hz screens. Much smoother day/night cycle: the sun glow and background are pre-rendered instead of being redrawn while the light changes.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

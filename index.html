@@ -84,7 +84,8 @@
 <div id="skins"><div class="panel"><div class="hd"><b>Skins</b><button class="x" id="skX" aria-label="Close">✕</button></div><div class="pv"><canvas id="skPv"></canvas><button class="eq" id="skE">Equip</button><div class="info"><div class="nm" id="skN"></div><div class="sci" id="skS"></div><div class="fact" id="skF"></div></div></div><div class="body"><div class="sec">Common birds</div><div class="grid" id="skG1"></div><div class="sec">Featured birds</div><div class="grid" id="skG2"></div></div></div></div>
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.5.6';</script>
+<script src="calls.js"></script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.7';</script>
 <script>
 (() => {
 'use strict';
@@ -601,7 +602,7 @@ const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','booby','macaw','vult
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
-let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
+const SRCN=32;let SRC=[];let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
   for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
@@ -636,7 +637,7 @@ function resize(){
   {const r=saProbe.getBoundingClientRect();SAT=r.top*DPR/S;SAB=r.height*DPR/S;}
   skyC=document.createElement('canvas');skyC.width=Math.ceil(W*S*Q.sky);skyC.height=Math.ceil((GY+12)*S*Q.sky);skyX=skyC.getContext('2d',{alpha:false});skyAge=99;
   srcSpr=null;
-  if(Q.vol){const vs=.14;vA=document.createElement('canvas');vB=document.createElement('canvas');vA.width=vB.width=Math.ceil(W*S*vs);vA.height=vB.height=Math.ceil((GY+10)*S*vs);vAx=vA.getContext('2d');vBx=vB.getContext('2d');}else vA=null;
+  SRC=[];srcSpr=null;if(Q.vol){const vs=.14;vA=document.createElement('canvas');vB=document.createElement('canvas');vA.width=vB.width=Math.ceil(W*S*vs);vA.height=vB.height=Math.ceil((GY+10)*S*vs);vAx=vA.getContext('2d');vBx=vB.getContext('2d');}else vA=null;
   if(Q.refl){reflC=document.createElement('canvas');reflC.width=Math.ceil(cv.width*Q.refl);reflC.height=Math.ceil(GH*S*Q.refl);reflX=reflC.getContext('2d',{alpha:false});}else reflC=null;
   gvC=document.createElement('canvas');gvC.width=Math.ceil(W*S*.15);gvC.height=Math.ceil(H*S*.15);gvX=gvC.getContext('2d',{alpha:false});gvKey='';
   vigC=mk(W,H,.15*S,g=>{const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.45,Math.max(W,H)*.78);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,12,.42)');g.fillStyle=vg;g.fillRect(0,0,W,H);});
@@ -683,7 +684,19 @@ function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAud
   if(ac&&ac.state==='suspended'&&!document.hidden)ac.resume().catch(()=>{});loadSamples();}
 function applyVolumes(){if(!ac)return;const t=ac.currentTime;sfxBus.gain.setTargetAtTime(muted?0:SFXV[+set.sfxv],t,.05);ambBus.gain.setTargetAtTime(muted?0:AMBV[+set.amb],t,.4);}
 function leadIn(buf){const d=buf.getChannelData(0),n=Math.min(d.length,buf.sampleRate*.25|0);for(let i=0;i<n;i++)if(Math.abs(d[i])>.004)return Math.max(0,i-8)/buf.sampleRate;return 0;}
+function b64buf(b){const bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;}
+function decodeB64(b,done){let once=false;const d=x=>{if(!once&&x){once=true;done(x);}};try{const pr=ac.decodeAudioData(b64buf(b),d,()=>{});if(pr&&pr.then)pr.then(d,()=>{});if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}}
+const CALLS={},callLoading={};let callSrc=null,callLast={};
+function loadCalls(id,cb){const C=window.SKY_CALLS&&window.SKY_CALLS[id];if(!ac||!C)return;if(CALLS[id]){cb&&cb();return;}if(callLoading[id]){if(cb)callLoading[id].push(cb);return;}
+  callLoading[id]=cb?[cb]:[];const out={hs:[],ten:[],crash:[]};let left=0;for(const ev in out)left+=C[ev].length;
+  for(const ev in out)C[ev].forEach((b,i)=>decodeB64(b,buf=>{out[ev][i]={buf,off:leadIn(buf)};if(--left===0){CALLS[id]=out;callLoading[id].forEach(f=>f());delete callLoading[id];}}));}
+function birdCall(ev,id,vol=.9){id=id||set.skin;const C=CALLS[id];if(!C){loadCalls(id);return false;}if(!ac||muted)return false;
+  const L=C[ev].filter(Boolean);if(!L.length)return false;let k=Math.random()*L.length|0;const key=id+ev;if(L.length>1&&k===callLast[key])k=(k+1)%L.length;callLast[key]=k;
+  if(callSrc){try{const o=callSrc;o.g.gain.setTargetAtTime(0,ac.currentTime,.03);o.s.stop(ac.currentTime+.15);}catch(e){}}
+  const s=ac.createBufferSource();s.buffer=L[k].buf;s.playbackRate.value=rnd(.96,1.04);const g=ac.createGain();g.gain.value=vol;s.connect(g).connect(sfxBus);s.start(0,L[k].off);
+  callSrc={s,g};s.onended=()=>{if(callSrc&&callSrc.s===s)callSrc=null;};return true;}
 function loadSamples(){
+  if(ac)loadCalls(set.skin);
   if(!ac||samplesLoading||!window.SKY_SND)return;samplesLoading=true;
   for(const k in window.SKY_SND){const bin=atob(window.SKY_SND[k]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
     const done=buf=>{SND[k]={buf,off:leadIn(buf)};if(window.SKY_LOOPS&&window.SKY_LOOPS[k])startAmb(k,buf,window.SKY_LOOPS[k]);};
@@ -697,7 +710,7 @@ function ambUpdate(){
   const lv={birds:.9*birds,night:.75*night,wind:.32+.22*clamp(speed/260,0,1)+.12*P.star,stream:.42};
   for(const k in AMB)AMB[k].gain.setTargetAtTime(lv[k]||0,t,.8);
 }
-function play(k,vol=1,rate=1){const smp=SND[k];if(!smp||!ac||muted)return false;const src=ac.createBufferSource();src.buffer=smp.buf;src.playbackRate.value=rate;
+function play(k,vol=1,rate=1){const smp=SND[k];if(!smp||!smp.buf||!ac||muted)return false;const src=ac.createBufferSource();src.buffer=smp.buf;src.playbackRate.value=rate;
   const g=ac.createGain();g.gain.value=vol;src.connect(g).connect(sfxBus);src.start(0,smp.off);return true;}
 function tone(f1,f2,dur,type='sine',vol=.2,delay=0){if(!ac||muted)return;const t=ac.currentTime+delay;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
   o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0008,t+dur);
@@ -709,8 +722,8 @@ const sfx={
   score(){tone(1760,1760,.08,'sine',.07);tone(2349,2349,.16,'sine',.06,.07);},
   milestone(){[1175,1480,1760,2349].forEach((f,i)=>tone(f,f,.14,'sine',.07,i*.07));},
   hit(){play('thunk',1,rnd(.8,.95));nz(.2,.35,600);tone(160,50,.3,'sine',.16);},
-  splash(){if(!play('splash'+(1+(Math.random()*3|0)),1,rnd(.9,1.05))){nz(.6,.45,1400);nz(.3,.3,400);}},
-  drop(){play('splash'+(1+(Math.random()*3|0)),.18,rnd(1.6,2.2));},
+  splash(){if(!play('splash1',1,rnd(.97,1.01))){nz(.6,.45,1400);nz(.3,.3,400);}},
+  drop(){const f=rnd(900,1600);tone(f,f*1.7,.035,'sine',.025);},
   swoosh(){if(!play('swish',.7,rnd(.9,1)))nz(.35,.12,900,'bandpass');},
   best(){[1047,1319,1568,2093].forEach((f,i)=>tone(f,f,.2,'sine',.06,.15+i*.1));}
 };
@@ -727,12 +740,12 @@ function palette(p){if(p===_pk)return _pv;_pk=p;_pv=paletteCalc(p);return _pv;}
 function paletteCalc(p){
   const i=Math.floor(p)%4,j=(i+1)%4;let t=p-Math.floor(p);t=t<.55?0:(t-.55)/.45;t=t*t*(3-2*t);
   const A=PAL[i],B=PAL[j],o={};for(const k in A)o[k]=typeof A[k]==='number'?lerp(A[k],B[k],t):mixRGB(A[k],B[k],t);
-  o.lit1=mixRGB(o.f,'#ffe2b0',.1);o.lit2=mixRGB(o.n,'#ffe2b0',.08);o.hb=mixRGB(o.h,o.b,.35);return o;
+  o.lit1=mixRGB(o.f,'#ffe2b0',.1);o.lit2=mixRGB(o.n,'#ffe2b0',.08);o.hb=mixRGB(o.h,o.b,.35);o._i=i;o._j=j;o._t=t;o._f=p-Math.floor(p);return o;
 }
 
 // ---------- state ----------
 let state='menu',paused=false,time=0,phase=0,scroll=0,speed=110;
-let bird,pipes=[],parts=[],drops=[],ripples=[],pops=[],score=0,deadT=0,shake=0,flash=0,newBest=false,lastGap=0;
+let hsPlayed=false,bird,pipes=[],parts=[],drops=[],ripples=[],pops=[],score=0,deadT=0,shake=0,flash=0,newBest=false,lastGap=0;
 const clouds=[];for(let i=0;i<8;i++)clouds.push({x:rnd(-100,1500),y:rnd(30,260),s:rnd(.55,1.25),p:rnd(.06,.3),spr:i%6,a:rnd(.75,1)});
 const stars=[];for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random()*.75,r:Math.random()<.92?rnd(.35,1):rnd(1,1.8),tw:rnd(0,6.28),c:Math.random()<.2?'#cfe0ff':Math.random()<.2?'#ffe8cf':'#ffffff'});
 const motes=[];for(let i=0;i<55;i++)motes.push({x:Math.random(),y:rnd(60,GY-20),r:rnd(.6,1.8),ph:rnd(0,6.28),p:rnd(.2,.8)});
@@ -740,7 +753,7 @@ const birdX=()=>clamp(W*.28,85,230);
 function resetBird(){bird={x:birdX(),y:H*.42,vy:0,rot:0,wing:0,squash:0,inWater:false};}
 resetBird();
 
-function startGame(){phase=set.tod==='cycle'?0:TOD[set.tod];skyAge=99;state='play';paused=false;score=0;pipes=[];pops=[];newBest=false;deadT=0;resetBird();lastGap=H*.42;spawnPipe(W+140);flap();}
+function startGame(){phase=set.tod==='cycle'?0:TOD[set.tod];skyAge=99;state='play';paused=false;score=0;pipes=[];pops=[];newBest=false;hsPlayed=false;deadT=0;resetBird();lastGap=H*.42;spawnPipe(W+140);flap();}
 const gapSize=()=>Math.max(134,175-score*1.1);
 function spawnPipe(x){const gap=gapSize(),min=90+gap/2,max=GY-70-gap/2;const y=clamp(lastGap+rnd(-190,190),min,max);lastGap=y;pipes.push({x,gy:y,gap,scored:false,seed:Math.random()});}
 function flap(){bird.vy=FLAP;bird.squash=1;sfx.flap();
@@ -751,6 +764,7 @@ function die(inWater){
   if(state!=='play')return;state='dead';deadT=0;shake=13;flash=.9;
   if(inWater){bird.inWater=true;bird.vy=0;splash(bird.x);}
   else{sfx.hit();bird.vy=-240;for(let i=0;i<18;i++){const a=rnd(0,Math.PI*2),v=rnd(80,340);parts.push({t:'feather',x:bird.x,y:bird.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-120,life:0,max:rnd(1.2,2),s:rnd(4,8),r:rnd(0,6),vr:rnd(-7,7),c:['#8a6a44','#e8642a','#6e5234','#f2e6d2'][i%4]});}}
+  setTimeout(()=>birdCall('crash'),inWater?260:110);
   if(score>best){best=score;newBest=true;saveBest();}
   setTimeout(()=>{if(state==='dead')sfx.swoosh();},500);if(newBest)setTimeout(()=>{if(state==='dead')sfx.best();},850);
 }
@@ -794,7 +808,8 @@ function update(dt){
     const last=pipes[pipes.length-1];if(last.x<W-238)spawnPipe(last.x+238);
     for(const p of pipes){
       if(!p.scored&&p.x+PW/2<bird.x){p.scored=true;score++;
-        if(score%10===0){sfx.milestone();pops.push({x:W/2,y:165,s:score+'!',life:0});}else sfx.score();
+        const hsNow=!hsPlayed&&best>0&&score===best+1;if(hsNow){hsPlayed=true;birdCall('hs',null,1);pops.push({x:W/2,y:165,s:'NEW BEST!',life:0});}
+        if(score%10===0){sfx.milestone();if(!hsNow){birdCall('ten');pops.push({x:W/2,y:165,s:score+'!',life:0});}}else sfx.score();
         for(let i=0;i<10;i++){const a=rnd(0,Math.PI*2),v=rnd(40,170);parts.push({t:'spark',x:p.x+PW/2,y:p.gy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:0,max:rnd(.3,.7),s:rnd(1,2.6)});}}
       if(circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900)){die(false);break;}
     }
@@ -873,16 +888,33 @@ const LAYERS=[
  {par:.36,y0:GY-74, y1:GY+6, key:P=>P.f+P.lit1+P.b, paint:(c,P)=>{pines(c,.36,15,GY-12,26,52,P.f,P.lit1,3,0);haze(c,GY-60,P,.3);}},
  {par:.62,y0:GY-114,y1:GY+10,key:P=>P.n+P.lit2, paint:(c,P)=>{pines(c,.62,26,GY+3,48,105,P.n,P.lit2,9,.4);}},
 ];
-function paintLayer(L,P,key){
-  const h=L.y1-L.y0;
-  if(!L.cv){L.cv=document.createElement('canvas');L.cv.width=Math.ceil((W+LPAD)*S);L.cv.height=Math.ceil(h*S);L.cx=L.cv.getContext('2d');}
-  const c=L.cx;c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,L.cv.width,L.cv.height);c.setTransform(S,0,0,S,0,-L.y0*S);
-  LW=W+LPAD;L.paint(c,P);L.sc=scroll;L.k=key;L.f=frame;
-}
+function layerCanvas(L,cv){if(!cv){cv=document.createElement('canvas');cv.width=Math.ceil((W+LPAD)*S);cv.height=Math.ceil((L.y1-L.y0)*S);}return cv;}
+function paintInto(L,cv,P){const c=cv.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);c.setTransform(S,0,0,S,0,-L.y0*S);LW=W+LPAD;L.paint(c,P);}
+function paintLayer(L,P,key){L.cv=layerCanvas(L,L.cv);paintInto(L,L.cv,P);L.sc=scroll;L.k=key;L.f=frame;}
+const PALK=[];const palKey=i=>PALK[i]||(PALK[i]=paletteCalc(i));
+// During a day/night transition the layer colours are a straight lerp between two keyframe palettes. Instead of
+// re-painting the procedural layers every few frames, the current image is kept as the 'from' keyframe, the 'to'
+// keyframe is painted once (ahead of time, one layer per frame) and the two are cross-faded: identical result.
+let lpFrame=-1,lbFrame=-1;
+function paintAt(L,cv,P,sc){const s0=scroll;scroll=sc;paintInto(L,cv,P);scroll=s0;}
 function drawLayer(c,L,P){
-  const key=L.key(P);let shift=(scroll-L.sc)*L.par;
-  if(L.gen!==layerGen){L.cv=null;L.gen=layerGen;}
+  if(L.gen!==layerGen){L.cv=L.B=L.M=null;L.gen=layerGen;}
+  const t=P._t,key=L.key(P);let shift=(scroll-L.sc)*L.par;
+  if(t>.002){
+    if(!L.cv||L.ai!==P._i||shift>LPAD-4||shift<0){         // (re)paint both keyframes at the current scroll
+      L.cv=layerCanvas(L,L.cv);paintInto(L,L.cv,palKey(P._i));L.sc=scroll;L.k=L.key(palKey(P._i));L.f=frame;L.ai=P._i;shift=0;L.B=null;}
+    if(!L.B||L.bj!==P._j||L.bsc!==L.sc){L.B=layerCanvas(L,L.B);paintAt(L,L.B,palKey(P._j),L.sc);L.bj=P._j;L.bsc=L.sc;L.mt=-1;}
+    if(!L.M){L.M=layerCanvas(L,null);L.Mx=L.M.getContext('2d');L.mt=-1;}
+    const d=Math.abs(t-L.mt);
+    if(L.mt<0||d>.05||(d>.012&&lbFrame!==frame)){lbFrame=frame;const m=L.Mx;m.setTransform(1,0,0,1,0,0);
+      m.globalCompositeOperation='copy';m.globalAlpha=1-t;m.drawImage(L.cv,0,0);m.globalCompositeOperation='lighter';m.globalAlpha=t;m.drawImage(L.B,0,0);
+      m.globalAlpha=1;m.globalCompositeOperation='source-over';L.mt=t;}
+    c.drawImage(L.M,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);return;}
+  if(L.M){ // transition finished: the 'to' keyframe is exactly the new palette -> it becomes the layer image
+    if(L.B&&L.bj===P._i&&L.bsc===L.sc){const o=L.cv;L.cv=L.B;L.B=o;L.k=key;L.f=frame;}L.M=L.Mx=null;L.ai=-1;}
   if(!L.cv||shift>LPAD-4||shift<0||(key!==L.k&&frame-L.f>=4)){paintLayer(L,P,key);shift=0;}
+  else if(P._f>.4&&L.k===L.key(palKey(P._i))&&(!L.B||L.bj!==P._j||L.bsc!==L.sc)&&lpFrame!==frame&&shift<LPAD*.6){
+    lpFrame=frame;L.B=layerCanvas(L,L.B);paintAt(L,L.B,palKey(P._j),L.sc);L.bj=P._j;L.bsc=L.sc;L.ai=P._i;} // prepare next keyframe early
   c.drawImage(L.cv,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);
 }
 function drawMotes(c,P,sun){
@@ -924,17 +956,20 @@ const FAR_KS=[[2,.45,1.3],[5,.25,.4],[11,.15,2.1],[23,.08,.7]];
 function ridgePath(c,par,base,amp,ks){const off=(scroll*par)%1800,step=12;c.beginPath();c.moveTo(-step,GY+12);
   for(let x=-step;x<=W+step;x+=step){const u=(x+off)/1800*Math.PI*2;let y=0;for(const k of ks)y+=Math.sin(u*k[0]+k[2])*k[1];c.lineTo(x,base-amp*y);}
   c.lineTo(W+step,GY+12);c.closePath();}
-function volLight(c,P,sun){
-  volOut=null;if(!vA||sun.a<=0||sun.y>GY+30)return;const k=sun.a*(1-P.star);if(k<.03)return;
-  const sc=vA.width/W,X=vAx,[r,g_,b]=hex(sun.col);
-  X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='source-over';X.globalAlpha=1;X.clearRect(0,0,vA.width,vA.height);X.setTransform(sc,0,0,sc,0,0);
-  // light source: pre-baked glow with ray gaps, rotated slowly
-  if(!srcSpr||srcKey!==sun.col){srcKey=sun.col;srcSpr=mk(480,480,sc,g=>{g.translate(240,240);
-      const gr=g.createRadialGradient(0,0,0,0,0,220);gr.addColorStop(0,`rgba(${r},${g_},${b},1)`);gr.addColorStop(.08,`rgba(${r},${g_},${b},.85)`);gr.addColorStop(.3,`rgba(${r},${g_},${b},.18)`);gr.addColorStop(1,`rgba(${r},${g_},${b},0)`);
+// light-source sprites for every sun colour, pre-rendered once (the sun colour changes every frame while it rises/sets)
+function srcSprite(qi){let e=SRC[qi];if(e)return e;const sc=vA.width/W,[r,g_,b]=hex(mixRGB('#ff5a1f','#fff4dc',qi/(SRCN-1)));
+  e=SRC[qi]=mk(480,480,sc,g=>{g.translate(240,240);const gr=g.createRadialGradient(0,0,0,0,0,220);gr.addColorStop(0,`rgba(${r},${g_},${b},1)`);gr.addColorStop(.08,`rgba(${r},${g_},${b},.85)`);gr.addColorStop(.3,`rgba(${r},${g_},${b},.18)`);gr.addColorStop(1,`rgba(${r},${g_},${b},0)`);
       g.fillStyle=gr;g.fillRect(-220,-220,440,440);g.globalCompositeOperation='destination-out';g.fillStyle='rgba(0,0,0,.62)';g.beginPath();
       for(let i=0;i<16;i++){const a0=i/16*Math.PI*2+Math.sin(i*2.3)*.22,w=.1+hash(i+5)*.12,r0=34,r1=240;
         g.moveTo(Math.cos(a0)*r0,Math.sin(a0)*r0);g.lineTo(Math.cos(a0)*r1,Math.sin(a0)*r1);g.lineTo(Math.cos(a0+w)*r1,Math.sin(a0+w)*r1);g.lineTo(Math.cos(a0+w)*r0,Math.sin(a0+w)*r0);g.closePath();}
-      g.fill();});}
+      g.fill();});return e;}
+function prebuildSrc(){if(!vA)return;for(let i=0;i<SRCN;i++)if(!SRC[i]){srcSprite(i);return;}}
+function volLight(c,P,sun){
+  if(!vA||sun.a<=0||sun.y>GY+30){volOut=null;return;}const k=sun.a*(1-P.star);if(k<.03){volOut=null;return;}
+  volOut=null;const sc=vA.width/W,X=vAx,[r,g_,b]=hex(sun.col);
+  X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='source-over';X.globalAlpha=1;X.clearRect(0,0,vA.width,vA.height);X.setTransform(sc,0,0,sc,0,0);
+  // light source: pre-baked glow with ray gaps, rotated slowly
+  srcSpr=srcSprite(Math.round(clamp(sun.e*1.5,0,1)*(SRCN-1)));
   X.save();X.translate(sun.x,sun.y);X.rotate(time*.015);X.drawImage(srcSpr,-240,-240,480,480);X.restore();
   // everything in front of the sun blocks the light
   X.globalCompositeOperation='destination-out';
@@ -1077,7 +1112,7 @@ function drawDead(){
 // ---------- render ----------
 let frame=0;
 function render(){
-  frame++;const P=palette(phase),sun=sunInfo();
+  frame++;const P=palette(phase),sun=sunInfo();if(SRC.length<SRCN||SRC.includes(undefined))prebuildSrc();
   if(++skyAge>=Q.skyEvery){renderSky(P,sun);skyAge=0;}
   const c=ctx,shk=set.shake?shake:0,shx=(Math.random()-.5)*shk,shy=(Math.random()-.5)*shk;
   c.setTransform(S,0,0,S,shx*S,shy*S);c.globalCompositeOperation='source-over';c.globalAlpha=1;
@@ -1170,7 +1205,7 @@ function buildSettings(){
     if(it.sec){h+=`<div class="sec">${it.sec}</div>`;continue;}
     if(it.updates){const u=updState||{},st={checking:'Checking\u2026',downloading:'Downloading'+(u.progress?` ${Math.round(u.progress*100)}%`:'\u2026'),ready:`Version ${u.ready&&u.ready.version} ready, restart to apply`,app:`App update ${u.app&&u.app.version} available`,uptodate:'You\u2019re up to date',error:'Couldn\u2019t check, '+(u.error||'offline?')}[u.status]||'';
       h+=`<div class="row col"><div id="updVer"><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}${set.channel==='beta'||IS_BETA_WEB?' \u00b7 <b style="color:#ffb27a">TEST</b>':''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
-    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; splashes from a CC0 water pack.</div>`;continue;}
+    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">Sounds are CC0 / public domain unless noted. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; water splash: custom sound supplied by the player. Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
     else{const cur=it.k==='preset'&&v==='custom'?'<span class="tag l">CUSTOM</span>':'';
@@ -1236,8 +1271,8 @@ function skFrame(t){
 }
 function openSkins(){if(!skBuilt)buildSkins();skSel=set.skin;skOpen=true;skEl.classList.add('open');skRefresh();requestAnimationFrame(skFrame);}
 function closeSkins(){skOpen=false;skEl.classList.remove('open');}
-skEl.addEventListener('click',e=>{const d=e.target.closest('.card');if(d){skSel=d.dataset.id;skRefresh();}});
-skE.addEventListener('click',()=>{if(set.skin===skSel)return;set.skin=skSel;saveSet();buildBirdSprites();skRefresh();});
+skEl.addEventListener('click',e=>{const d=e.target.closest('.card');if(d){skSel=d.dataset.id;skRefresh();ensureAudio();const id=skSel;loadCalls(id,()=>{if(skOpen&&skSel===id)birdCall('ten',id,.8);});}});
+skE.addEventListener('click',()=>{if(set.skin===skSel)return;set.skin=skSel;saveSet();buildBirdSprites();skRefresh();loadCalls(set.skin);});
 document.getElementById('skX').addEventListener('click',closeSkins);
 skEl.addEventListener('pointerdown',e=>{if(e.target===skEl)closeSkins();e.stopPropagation();});
 
@@ -1291,7 +1326,7 @@ let last=performance.now(),perfAcc=0,perfN=-60,fpsN=0,fpsT=0,fpsTxt='',fpsVal=0;
 let lastR=-1e9;
 function loop(now){
   requestAnimationFrame(loop);
-  const cap=set.cap==='max'?0:+set.cap;if(cap&&now-lastR<1000/cap-2)return;lastR=now;
+  const cap=set.cap==='max'?0:+set.cap;if(cap){const iv=1000/cap;if(now-lastR<iv-1.5)return;lastR=now-lastR>iv*2?now:lastR+iv;}
   const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
   update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
