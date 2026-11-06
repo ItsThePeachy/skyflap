@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.4",
-  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
+  "version": "1.6.5",
+  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "a0e63db4706d8116fe35615d64fea0c70d8890e6069c302ef9361918a3f45ee0",
-    "size": 179070
+    "sha256": "46e7fe40c1e8b72074dd835ed220365fcbaabdf6550a33048e1437e76070c3d7",
+    "size": 179537
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
+  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops.",
+  "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

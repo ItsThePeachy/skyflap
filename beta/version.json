@@ -1,1 +1,1 @@
-{"version": "1.6.4", "notes": "Smoother day/night cycle: the background no longer gets redrawn constantly while the sky changes colour (about 40x less work during transitions), which caused the FPS drops."}
+{"version": "1.6.5", "notes": "Sunrise/sunset FPS fix: the volumetric sun glow is now pre-rendered for every sun colour at launch instead of being rebuilt every frame while the sun moves. Lighter background cross-fade."}
