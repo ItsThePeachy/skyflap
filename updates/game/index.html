@@ -75,7 +75,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.7.2';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.8.0';</script>
 <script>
 (() => {
 'use strict';
@@ -289,6 +289,14 @@ function drawBeakSp(c,sp){
       c.fillStyle=k.tip;c.beginPath();c.ellipse(x+L*.98,y+d*.05,L*.14,d*.85,0,0,TAU);c.fill();
       c.fillStyle=k.base;c.fillRect(x-1,y-d,1.6,d*2);c.restore();}
     c.strokeStyle='rgba(60,20,0,.5)';c.lineWidth=.45;c.beginPath();c.moveTo(x,y+d*.06);c.bezierCurveTo(x+L*.3,y+d*.14,x+L*.6,y+d*.06,x+L*.86,y+d*.2);c.stroke();
+  }else if(k.t==='duck'){ // flat spatulate bill (ducks, swans); optional black knob + base (mute swan)
+    c.beginPath();c.moveTo(x-.6,y-d/2);c.quadraticCurveTo(x+L*.5,y-d*.62,x+L*.92,y-d*.22);c.quadraticCurveTo(x+L*1.05,y+d*.05,x+L*.9,y+d*.26);c.lineTo(x,y+d*.16);c.closePath();
+    c.fillStyle=beakGrad(c,x,y-d*.15,d*.8,k.up);c.fill();
+    c.beginPath();c.moveTo(x,y+d*.16);c.lineTo(x+L*.88,y+d*.28);c.quadraticCurveTo(x+L*.5,y+d*.56,x-.6,y+d*.46);c.closePath();c.fillStyle=beakGrad(c,x,y+d*.3,d*.35,dk(k.up,.82));c.fill();
+    if(k.nail){c.fillStyle=k.nail;c.beginPath();c.ellipse(x+L*.93,y-d*.02,1,1.5,.3,0,TAU);c.fill();}
+    if(k.knob){c.fillStyle=k.knob;c.beginPath();c.moveTo(x-.8,y-d*.55);c.quadraticCurveTo(x+.8,y-d*1.25,x+2.8,y-d*.6);c.lineTo(x+2.2,y+d*.2);c.lineTo(x-.8,y+d*.45);c.closePath();c.fill();}
+    c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=.5;c.beginPath();c.moveTo(x+L*.15,y-d*.48);c.quadraticCurveTo(x+L*.55,y-d*.55,x+L*.88,y-d*.25);c.stroke();
+    c.strokeStyle='rgba(0,0,0,.3)';c.fillStyle='rgba(0,0,0,.4)';c.beginPath();c.ellipse(x+L*.3,y-d*.22,.8,.45,0,0,TAU);c.fill();
   }else if(k.t==='flamingo'){
     const pts=[[x-.5,y],[x+L*.42,y-d*.18],[x+L*.62,y+d*.1],[x+L*.7,y+L*.48]];
     const pth=new Path2D();tubePath(pth,pts,d,.9);c.save();c.clip(pth);
@@ -352,8 +360,8 @@ function drawSpeciesBody(c,sp,dead){
   for(const p of sp.patches||[])paintPatch(c,p);
   c.strokeStyle=sp.tex||'rgba(35,22,10,.2)';c.lineWidth=.55;
   for(let r=0;r<3;r++)for(let j=0;j<8;j++){const x=b.f*.35-j*(b.r*1.15/7)-r*1.7,y=-b.t*.82+r*3.1+j*.45;c.beginPath();c.arc(x,y,2,.3,Math.PI-.3);c.stroke();}
-  g=c.createRadialGradient(b.f*.5,-b.t*1.1,0,b.f*.5,-b.t*1.1,(b.r+b.f)*.95);g.addColorStop(0,'rgba(255,244,220,.42)');g.addColorStop(1,'rgba(255,244,220,0)');c.fillStyle=g;c.fillRect(x0,top-2,x1-x0,bot-top+4);
-  g=c.createRadialGradient(h.x+h.r*.2,h.y-h.r*.75,0,h.x+h.r*.2,h.y-h.r*.75,h.r*1.5);g.addColorStop(0,'rgba(255,248,230,.35)');g.addColorStop(1,'rgba(255,248,230,0)');c.fillStyle=g;c.fillRect(h.x-h.r*2,h.y-h.r*2.2,h.r*4,h.r*4);
+  g=c.createRadialGradient(b.f*.5,-b.t*1.1,0,b.f*.5,-b.t*1.1,(b.r+b.f)*.95);const hl=sp.hl==null?1:sp.hl;g.addColorStop(0,`rgba(255,244,220,${.42*hl})`);g.addColorStop(1,'rgba(255,244,220,0)');c.fillStyle=g;c.fillRect(x0,top-2,x1-x0,bot-top+4);
+  g=c.createRadialGradient(h.x+h.r*.2,h.y-h.r*.75,0,h.x+h.r*.2,h.y-h.r*.75,h.r*1.5);g.addColorStop(0,`rgba(255,248,230,${.35*hl})`);g.addColorStop(1,'rgba(255,248,230,0)');c.fillStyle=g;c.fillRect(h.x-h.r*2,h.y-h.r*2.2,h.r*4,h.r*4);
   g=c.createLinearGradient(0,-b.t*.1,0,b.u+2);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(15,8,0,.42)');c.fillStyle=g;c.fillRect(x0,-b.t*.1,x1-x0,b.u+4);
   c.restore();
   if(sp.pouch){const p=sp.pouch;g=c.createRadialGradient(p.x+p.rx*.35,p.y-p.ry*.35,.5,p.x,p.y,p.rx*1.1);g.addColorStop(0,mixRGB(p.c,'#ffffff',.45));g.addColorStop(.35,p.c);g.addColorStop(1,dk(p.c,.55));
@@ -423,7 +431,7 @@ function spBoxes(sp){
 const E=(x,y,rx,ry,c,o={})=>Object.assign({t:'e',x,y,rx,ry,c},o);
 const SPECIES={
  robin:{name:'European Robin',sci:'Erithacus rubecula',group:'Common',custom:true,wing:{sh:[1,-6],fsh:[-1,-9]},
-   fact:'Sings almost all year round, and city robins often sing at night under streetlights.'},
+   fact:'Magnetic navigation: Robins possess a specialized light-sensitive protein (cryptochrome) in their eyes that allows them to literally see the Earth\'s magnetic field during migration.'},
  pigeon:{name:'Rock Pigeon',sci:'Columba livia',group:'Common',
    body:{f:13,r:19,t:11,u:13.5},head:{x:14.5,y:-9.5,r:6.6},neck:{w:10},
    col:{back:'#8e96a6',mid:'#9aa1b0',belly:'#a3a9b6'},
@@ -444,7 +452,7 @@ const SPECIES={
    tail:{x:-14,y:-2,len:15,n:6,spread:.28,w:3.6,col:'#6e4e30',fork:.12},
    wing:{arm:12,pl:19,np:6,fan:.12,pw:3.6,ns:5,sl:8,col:{cov:'#a26a38',cov2:'#8a5a32',sec:'#6e4a2a',pri:'#3e2c1c',edge:'#d9b98a',bar:'#f4efe6'},sh:[0,-5.5],fsh:[-2,-8.5],amp:1.2},
    legs:{t:'tuck',col:'#b08a74'},
-   fact:'Lives alongside people on every continent except Antarctica.'},
+   fact:'The dust bathers: Instead of taking water baths, house sparrow flocks frequently gather to take communal "dust baths," flicking dry dirt over their feathers to remove parasites and excess preen oil.'},
  crow:{name:'Carrion Crow',sci:'Corvus corone',group:'Common',
    body:{f:12,r:21,t:11,u:11},head:{x:14,y:-6.5,r:8.3},
    col:{back:'#17171d',mid:'#1b1b22',belly:'#23232b'},sheen:'#8a9cff',tex:'rgba(255,255,255,.05)',
@@ -453,7 +461,7 @@ const SPECIES={
    tail:{x:-19,y:-1,len:19,n:7,spread:.32,w:4.4,col:'#17171c',wedge:.16},
    wing:{arm:15,pl:27,np:6,fan:.16,pw:4.4,ns:6,sl:12,fingers:true,col:{cov:'#1f1f26',sec:'#18181d',pri:'#121216',edge:'#5a6590'},sh:[0,-6],fsh:[-2,-9],amp:1},
    legs:{t:'tuck',col:'#1d1d1d'},
-   fact:'Crows can recognise individual human faces and remember them for years.'},
+   fact:'Traffic light tool users: Crows have been observed placing hard-shelled nuts onto pedestrian crosswalks, waiting for cars to run over them, and waiting for the red light so they can safely collect the cracked food.'},
  gull:{name:'Herring Gull',sci:'Larus argentatus',group:'Common',
    body:{f:12,r:21,t:10,u:11},head:{x:14.5,y:-7,r:7.8},
    col:{back:'#eef1f4',mid:'#f2f4f6',belly:'#f7f8fa'},
@@ -463,7 +471,7 @@ const SPECIES={
    tail:{x:-19,y:-1,len:15,n:6,spread:.22,w:4,col:'#f2f4f6'},
    wing:{arm:20,pl:32,np:7,fan:.06,pw:3.4,ns:7,sl:9,tips:true,mirror:'#ffffff',col:{cov:'#b3bfcc',sec:'#aab6c3',pri:'#a8b3c0',tip:'#16161a',trail:'#eef1f4',edge:'#ffffff'},sh:[0,-5.5],fsh:[-2,-8],amp:.95},
    legs:{t:'tuck',col:'#e8a49a'},
-   fact:'Chicks peck the red spot on their parent’s bill to ask for food.'},
+   fact:'Worm dance trick: Herring gulls stomp their feet rhythmically on grassy soil in a move known as the "patter dance," mimicking the vibration of rainfall to trick earthworms into surfacing.'},
  booby:{name:'Blue-footed Booby',sci:'Sula nebouxii',group:'Featured',
    body:{f:12,r:22,t:9.5,u:10},head:{x:15,y:-6,r:7.4},
    col:{back:'#7a5a3e',mid:'#d9d0c2',belly:'#f4f0e8'},
@@ -587,8 +595,171 @@ const SPECIES={
    wing:{arm:22,pl:32,np:7,fan:.13,pw:4.6,ns:8,sl:13,fingers:true,col:{cov:'#4a3220',sec:'#33231a',pri:'#221812',edge:'#8a6a4a'},sh:[0,-6],fsh:[-2,-9],amp:.85},
    legs:{t:'talon',col:'#f3c21a',fur:'#3a271a'},
    fact:'Builds the largest nests of any North American bird, sometimes over a tonne.'},
+ blackbird:{name:'Common Blackbird',sci:'Turdus merula',group:'Common',hl:0.3,
+   body:{f:12,r:19,t:10.5,u:11},head:{x:13,y:-7,r:7.8},
+   col:{back:'#16151a',mid:'#1b1a1f',belly:'#222128'},sheen:'#6a6a80',tex:'rgba(255,255,255,.05)',
+   patches:[E(13,-7.4,8.8,8.4,'#0f0e12',{soft:.8})],
+   eye:{x:16,y:-8.3,r:2,iris:'#2a1a12',ring:'#f2b21c',rw:.75},
+   beak:{t:'cone',x:19.6,y:-6.4,len:8,d:3.6,curve:.6,up:'#f4a51c',lo:'#e8931a'},
+   tail:{x:-17,y:-1.5,len:22,n:6,spread:.18,w:4,col:'#141317'},
+   wing:{arm:13,pl:21,np:6,fan:.1,pw:3.8,ns:6,sl:10,col:{cov:'#1d1c22',sec:'#17161b',pri:'#121115',edge:'#4a4a5a'},sh:[0,-6],fsh:[-2,-9]},
+   legs:{t:'tuck',col:'#3a2f2a'},
+   fact:'Territorial crooners: Male blackbirds sing from high perches at dawn and dusk, learning distinct regional melodies; rivals often mimic individual song variations to mark territorial boundaries.'},
+ greattit:{name:'Great Tit',sci:'Parus major',group:'Common',hl:0.35,
+   body:{f:11,r:15,t:10,u:10.5},head:{x:11.5,y:-7,r:7.8},
+   col:{back:'#6f8a3c',mid:'#d8cf4a',belly:'#f0d838'},
+   patches:[E(-4,-7,13,6,'#6f8a3c',{soft:.5}),E(11.5,-7.2,9.2,8.8,'#0e0e10',{soft:.86}),E(13.8,-5.2,4.6,3.3,'#f8f8f4',{soft:.62}),E(7.6,-10.4,2,1.6,'#f2f2ea',{a:.8}),
+     {t:'s',pts:[[13.5,-.5],[10.5,5.5],[5.5,10.5]],w:3.2,c:'#141414'}],
+   eye:{x:14.3,y:-8.3,r:1.9},
+   beak:{t:'cone',x:18.6,y:-6.6,len:5,d:3.4,curve:.5,up:'#1a1a1a',lo:'#262626'},
+   tail:{x:-13,y:-2,len:16,n:6,spread:.22,w:3.4,col:'#4e6478'},
+   wing:{arm:11,pl:18,np:6,fan:.12,pw:3.6,ns:5,sl:8,col:{cov:'#5d7894',cov2:'#6b86a0',sec:'#4a6078',pri:'#33404c',bar:'#f4f4ee',edge:'#dfe8f0'},sh:[0,-5.5],fsh:[-2,-8.5],amp:1.25},
+   legs:{t:'tuck',col:'#5a6a7a'},
+   fact:'Personality types: Scientists have found that individual Great Tits exhibit stable personality traits—some are consistently naturally curious and brave, while others are cautious and hesitant.'},
+ bluetit:{name:'Eurasian Blue Tit',sci:'Cyanistes caeruleus',group:'Common',scale:.9,
+   body:{f:10,r:13,t:9.5,u:10},head:{x:10.5,y:-6.5,r:7.8},
+   col:{back:'#7f9a46',mid:'#e2d64a',belly:'#f2dc3a'},
+   patches:[E(-4,-6,11,5,'#7f9a46',{soft:.5}),E(11,-6,8.2,7.6,'#f7f7f2',{soft:.5}),E(10,-11.2,7.6,3.8,'#3a7ad8',{soft:.6}),
+     {t:'s',pts:[[17.2,-7.4],[12.5,-7.8],[5.5,-6]],w:1.25,c:'#14204a'},{t:'s',pts:[[16,-1.8],[11,.8],[5.2,-2.8]],w:1.5,c:'#14204a'}],
+   eye:{x:13.4,y:-7.6,r:1.8},
+   beak:{t:'cone',x:17.6,y:-6,len:4.4,d:3.4,curve:.4,up:'#1e2228',lo:'#2a2e34'},
+   tail:{x:-12,y:-2,len:13,n:6,spread:.22,w:3.2,col:'#3a6ac4'},
+   wing:{arm:10,pl:16,np:6,fan:.12,pw:3.4,ns:5,sl:7,col:{cov:'#4a86d8',sec:'#3a6ac0',pri:'#2a4a8a',bar:'#f4f6f8',edge:'#cfe0ff'},sh:[0,-5],fsh:[-2,-8],amp:1.3},
+   legs:{t:'tuck',col:'#5a6a8a'},
+   fact:'Milk bottle thieves: Mid-20th-century blue tits made history by figuring out how to pierce the foil caps of delivered glass milk bottles to skim the rich cream off the top, passing the skill across generations.'},
+ chaffinch:{name:'Common Chaffinch',sci:'Fringilla coelebs',group:'Common',
+   body:{f:11,r:16,t:10,u:10.5},head:{x:11.5,y:-6.8,r:7.6},
+   col:{back:'#8a5a3e',mid:'#d08a6a',belly:'#e8b8a0'},
+   patches:[E(10,-10.6,8.2,5,'#6a86a8',{soft:.6}),E(4,-9,5,3,'#6a86a8',{soft:.5}),E(14,-2,8,8,'#d9845e',{soft:.6}),E(-11,-3,5,3.5,'#8aa85a',{soft:.5})],
+   eye:{x:14,y:-7.8,r:1.9},
+   beak:{t:'cone',x:18,y:-5.8,len:6,d:4.4,curve:.5,up:'#8a96a6',lo:'#7a8696'},
+   tail:{x:-14,y:-2,len:16,n:6,spread:.24,w:3.5,col:'#3a3230',fork:.14},
+   wing:{arm:12,pl:19,np:6,fan:.12,pw:3.6,ns:5,sl:8,col:{cov:'#2a2422',cov2:'#f2efe8',sec:'#26201e',pri:'#1c1817',patch:'#f2efe8',bar:'#f4f0e8',edge:'#e8d8a8'},sh:[0,-5.5],fsh:[-2,-8.5],amp:1.2},
+   legs:{t:'tuck',col:'#9a7a6a'},
+   fact:'Local dialects: Male chaffinches learn their courtship songs from adult males in their immediate area, resulting in noticeable regional "accents" across different woods and regions.'},
+ starling:{name:'European Starling',sci:'Sturnus vulgaris',group:'Common',hl:0.35,
+   body:{f:12,r:16,t:10,u:10.5},head:{x:13,y:-6.5,r:7.4},
+   col:{back:'#1c1824',mid:'#211c2a',belly:'#262030'},sheen:'#9a6ad8',tex:'rgba(255,255,255,.05)',
+   patches:[E(4,-6,10,6,'#2a6a4a',{a:.45,soft:.5}),E(12,-4,7,6,'#5a2a7a',{a:.5,soft:.5}),
+     {t:'f',fn:c=>{c.fillStyle='rgba(245,238,220,.85)';for(let i=0;i<30;i++){const x=-13+((i*37)%30),y=-7+((i*53)%17);c.beginPath();c.arc(x,y,.55,0,TAU);c.fill();}}}],
+   eye:{x:15.6,y:-7.6,r:1.8},
+   beak:{t:'dagger',x:19.4,y:-5.8,len:10,d:3.4,curve:.4,up:'#f2cc2a',lo:'#e8c022'},
+   tail:{x:-14,y:-2,len:12,n:6,spread:.2,w:3.6,col:'#1a1620'},
+   wing:{arm:14,pl:22,np:7,fan:.07,pw:3.4,ns:6,sl:9,col:{cov:'#241e2e',sec:'#1c1824',pri:'#151219',edge:'#c8a878'},sh:[0,-5.5],fsh:[-2,-8.5]},
+   legs:{t:'tuck',col:'#c8786a'},
+   fact:'Master mimics: Starlings can mimic car alarms, phone ringtones, and up to 20 other bird species, using these sounds inside their complex murmuration chatter.'},
+ wren:{name:'Eurasian Wren',sci:'Troglodytes troglodytes',group:'Common',scale:.84,
+   body:{f:10,r:12,t:10,u:10},head:{x:10,y:-6,r:7.2},
+   col:{back:'#7a5234',mid:'#9a6c46',belly:'#c8a07a'},
+   patches:[{t:'s',pts:[[16,-9],[11,-9.8],[5.5,-8.2]],w:1.1,c:'#e8d4b0'},
+     {t:'f',fn:c=>{c.strokeStyle='rgba(40,22,10,.55)';c.lineWidth=.6;for(let i=0;i<9;i++){c.beginPath();c.moveTo(-10+i*2.4,-9+i*.2);c.lineTo(-11+i*2.4,-5+i*.2);c.stroke();}for(let i=0;i<5;i++){c.beginPath();c.moveTo(-6+i*2.6,5);c.lineTo(-7+i*2.6,8);c.stroke();}}}],
+   eye:{x:13,y:-7,r:1.7},
+   beak:{t:'slender',x:16.6,y:-5.6,len:7,d:2.2,curve:.8,up:'#3a2a1e'},
+   tail:{x:-10,y:-5,len:12,n:5,spread:.2,w:3,col:'#6e4a2e',bars:'#2a1a0e',ang:1.05},
+   wing:{arm:9,pl:14,np:6,fan:.14,pw:3.4,ns:5,sl:7,bars:'#2a1a0e',col:{cov:'#7e5636',sec:'#6a4a30',pri:'#4a3220',edge:'#c8a070'},sh:[0,-5],fsh:[-2,-8],amp:1.35},
+   legs:{t:'tuck',col:'#c8a088'},
+   fact:'Decoy nests: A single male wren builds up to 6 or 8 dome-shaped moss nests in his territory, letting the female inspect them all before she chooses her favorite to lay eggs in.'},
+ swallow:{name:'Barn Swallow',sci:'Hirundo rustica',group:'Common',
+   body:{f:11,r:17,t:8,u:8.5},head:{x:12.5,y:-5,r:7},
+   col:{back:'#1c2c5a',mid:'#e8d8c0',belly:'#f2e6d2'},sheen:'#6a8ae8',
+   patches:[E(-4,-6,15,5,'#1e2f62',{soft:.5}),E(12,-8.6,7.2,4.6,'#1e2f62',{soft:.6}),E(16,-1.6,4.6,4,'#b8321e',{soft:.6}),E(17.6,-8,2.4,1.8,'#b8321e'),{t:'s',pts:[[15,2.6],[11,4.2],[7,3]],w:1.8,c:'#1e2f62'}],
+   eye:{x:15,y:-6.4,r:1.7},
+   beak:{t:'cone',x:18.8,y:-4.8,len:3.6,d:3,curve:.2,up:'#141414',lo:'#1c1c1c'},
+   tail:{x:-16,y:-1,len:32,n:6,spread:.3,w:2.4,col:'#1c2c5a',fork:.85},
+   wing:{arm:18,pl:30,np:7,fan:.05,pw:2.8,ns:6,sl:7,bend:-.3,col:{cov:'#22346a',sec:'#1c2c5a',pri:'#141e40',edge:'#5a6aa0'},sh:[0,-4.5],fsh:[-2,-7.5],amp:1},
+   fact:'In-flight dining: Swallows drink water while skimming directly over the surface of lakes and rivers, scooping up liquid on the wing without ever stopping their flight.'},
+ swift:{name:'Common Swift',sci:'Apus apus',group:'Common',hl:0.5,
+   body:{f:11,r:16,t:7.5,u:8},head:{x:12,y:-4.5,r:6.8},
+   col:{back:'#2e2a28',mid:'#34302d',belly:'#3a3532'},tex:'rgba(255,255,255,.05)',
+   patches:[E(15.5,-1.5,3.4,2.6,'#8a847c',{soft:.6})],
+   eye:{x:14.6,y:-5.6,r:1.7,iris:'#1a1410'},
+   beak:{t:'cone',x:18.4,y:-4.4,len:2.6,d:2.6,curve:.2,up:'#1a1a1a',lo:'#222'},
+   tail:{x:-15,y:-1,len:13,n:5,spread:.3,w:2.6,col:'#2a2624',fork:.55},
+   wing:{arm:22,pl:44,np:7,fan:.03,pw:2.6,ns:5,sl:6,bend:-.6,col:{cov:'#322d2a',sec:'#2a2624',pri:'#221f1d',edge:'#6a625a'},sh:[0,-4],fsh:[-2,-7],amp:.8},
+   fact:'Ten months in the air: Common Swifts can stay airborne continuously for up to 10 straight months, eating, sleeping, and even mating on the wing without landing once.'},
+ magpie:{name:'Eurasian Magpie',sci:'Pica pica',group:'Common',hl:0.35,
+   body:{f:12,r:18,t:10.5,u:11},head:{x:13.5,y:-6.5,r:7.8},
+   col:{back:'#141418',mid:'#e8e8ea',belly:'#f4f4f6'},sheen:'#6a8aff',
+   patches:[E(13,-4,10,10,'#141418',{soft:.45}),E(-6,-8.5,14,5,'#141418',{soft:.5})],
+   eye:{x:16.4,y:-7.8,r:1.9,iris:'#2a1a12'},
+   beak:{t:'cone',x:20,y:-5.8,len:9,d:4.4,curve:1,up:'#141414',lo:'#1c1c1c'},
+   tail:{x:-17,y:-1.5,len:44,n:7,spread:.12,w:4,col:'#203a5a',col2:'#2f6a3a',band:.4,grad:true,wedge:.5},
+   wing:{arm:14,pl:22,np:7,fan:.12,pw:4,ns:6,sl:10,col:{cov:'#f4f4f6',sec:'#1e3a6a',pri:'#151518',patch:'#f4f4f6',edge:'#6a8aff'},sh:[0,-6],fsh:[-2,-9],amp:1.1},
+   legs:{t:'tuck',col:'#141414'},
+   fact:'Self-awareness: The Eurasian Magpie is one of the only non-mammal species known to pass the mirror self-recognition test, recognizing its own reflection rather than seeing another bird.'},
+ woodpigeon:{name:'Common Wood Pigeon',sci:'Columba palumbus',group:'Common',scale:1.03,
+   body:{f:13,r:20,t:11,u:13.5},head:{x:14.5,y:-9,r:6.4},neck:{w:10},
+   col:{back:'#8a92a4',mid:'#a893a0',belly:'#b8a3ad'},
+   patches:[E(14.5,-9,7.4,6.8,'#8a92a4',{soft:.6}),E(10.5,-6,7,5,'#5aa07c',{a:.7,soft:.35}),E(10,-4,3.8,2.4,'#f6f6f4',{soft:.4}),E(11,2,8,6,'#b89aa6',{soft:.5}),E(-8,-4,10,6,'#7e8698',{a:.6})],
+   eye:{x:16.6,y:-10.2,r:1.9,iris:'#f2e8c8',pupil:.45,ring:'#cfc8bd',rw:.4},
+   beak:{t:'cone',x:20.3,y:-8.6,len:5.6,d:2.6,curve:.7,up:'#f0c84a',lo:'#e8b840',cere:'#e8a0b0'},
+   tail:{x:-18,y:-1,len:18,n:6,spread:.24,w:4,col:'#8a92a2',col2:'#2b2d33',band:.74},
+   wing:{arm:15,pl:25,np:7,fan:.1,pw:3.8,ns:6,sl:10,col:{cov:'#8e96a8',sec:'#7e8698',pri:'#3f434c',bar:'#f6f6f4',edge:'#d6dae2'},sh:[0,-6.5],fsh:[-2,-9.5],amp:1.15},
+   legs:{t:'tuck',col:'#d0606a'},
+   fact:'Crop milk producers: Both male and female wood pigeons produce a protein- and fat-rich liquid called "crop milk" in their digestive tracts to nourish their newly hatched chicks.'},
+ collareddove:{name:'Eurasian Collared Dove',short:'Collared Dove',sci:'Streptopelia decaocto',group:'Common',
+   body:{f:12,r:18,t:10,u:11},head:{x:13.5,y:-8,r:6.6},neck:{w:9},
+   col:{back:'#c8b8a8',mid:'#d4c4b4',belly:'#ddd0c4'},tex:'rgba(80,60,40,.1)',
+   patches:[E(13.5,-8,7.2,6.6,'#c9bdb2',{soft:.6}),{t:'s',pts:[[9.6,-8.2],[8.6,-5.2],[9.8,-2.4]],w:1.8,c:'#1c1a1a'},{t:'s',pts:[[10.8,-8.2],[9.9,-5.1],[11,-2.2]],w:.7,c:'#f4f0ea'}],
+   eye:{x:15.6,y:-9,r:1.9,iris:'#b8262a',pupil:.45,ring:'#f2f0ec',rw:.5},
+   beak:{t:'cone',x:19.2,y:-7.6,len:5,d:2.4,curve:.6,up:'#2a2626',lo:'#332e2e'},
+   tail:{x:-17,y:-1,len:24,n:6,spread:.2,w:3.8,col:'#bcae9e',col2:'#f2eee8',band:.82},
+   wing:{arm:14,pl:24,np:7,fan:.1,pw:3.6,ns:6,sl:10,col:{cov:'#c4b4a2',sec:'#b0a090',pri:'#4a4440',edge:'#efe6da'},sh:[0,-6],fsh:[-2,-9],amp:1.15},
+   legs:{t:'tuck',col:'#c86a72'},
+   fact:'Rapid colonizer: Originally native to warm regions of Asia and Southeastern Europe, this dove launched a massive westward expansion across the entire European continent during the mid-20th century.'},
+ mallard:{name:'Mallard',sci:'Anas platyrhynchos',group:'Common',hl:0.4,scale:1.04,
+   body:{f:13,r:20,t:10,u:12},head:{x:15,y:-9,r:7.2},neck:{w:9.5},
+   col:{back:'#8a8a86',mid:'#b4b2aa',belly:'#c8c6be'},tex:'rgba(40,40,40,.1)',
+   patches:[E(15,-9,8.8,8.2,'#0f5a30',{soft:.84}),E(16.5,-11.4,4,2.2,'#3ab070',{a:.7,soft:.5}),{t:'s',pts:[[10.2,-4.4],[12.6,-2.8],[15.2,-3.1]],w:1.4,c:'#f6f6f2'},E(13,1.5,8.5,7.5,'#6a3a26',{soft:.5}),E(-17,-2,5,5,'#141414',{soft:.5})],
+   eye:{x:16.8,y:-10.4,r:1.7,iris:'#2a1a12'},
+   beak:{t:'duck',x:20.6,y:-8.4,len:9,d:4.4,up:'#e8c83a',nail:'#2a2a1a'},
+   tail:{x:-19,y:-3,len:10,n:5,spread:.2,w:3,col:'#dcdcd6'},
+   wing:{arm:16,pl:25,np:7,fan:.07,pw:3.6,ns:6,sl:9,col:{cov:'#9a9892',sec:'#8a8a84',pri:'#6a665e',mid:'#2a4ad0',bar:'#f4f4f0',edge:'#d8d4c8'},sh:[0,-6],fsh:[-2,-9],amp:1},
+   legs:{t:'tuck',col:'#f08a2a'},
+   fact:'Sleeping with one eye open: When mallards sleep in a group row, the ducks on the outer edges sleep with one eye open facing outward to watch for predators while keeping half of their brain awake.'},
+ muteswan:{name:'Mute Swan',sci:'Cygnus olor',group:'Common',scale:1.1,
+   body:{f:13,r:22,t:11,u:11},head:{x:31.5,y:-8.5,r:5.6},neck:{pts:[[6,-4],[12,-14],[24,-16],[30,-8]],w0:9,w1:5.4},
+   col:{back:'#f2f2ee',mid:'#f6f6f2',belly:'#fbfbf8'},tex:'rgba(80,90,110,.1)',
+   eye:{x:32.6,y:-9.6,r:1.3,iris:'#1a1a1a'},
+   beak:{t:'duck',x:35.4,y:-7.9,len:9,d:3.8,up:'#f08a2a',nail:'#1a1a1a',knob:'#141414'},
+   tail:{x:-20,y:-2,len:12,n:6,spread:.2,w:4,col:'#f2f2ee',ang:.3},
+   wing:{arm:22,pl:34,np:7,fan:.07,pw:4,ns:8,sl:12,col:{cov:'#f6f6f2',sec:'#ecece6',pri:'#e2e2dc',edge:'#ffffff'},sh:[0,-5],fsh:[-2,-8],amp:.85},
+   legs:{t:'tuck',col:'#2a2a2a'},
+   fact:'Feather count champions: A full-grown mute swan possesses over 25,000 individual feathers—more than almost any other European bird species—with over 80% located on its neck.'},
+ bhgull:{name:'Black-headed Gull',short:'B-h Gull',sci:'Chroicocephalus ridibundus',group:'Common',hl:0.55,scale:.92,
+   body:{f:12,r:19,t:9.5,u:10},head:{x:14,y:-6.5,r:7.2},
+   col:{back:'#eef1f4',mid:'#f2f4f6',belly:'#f7f8fa'},tex:'rgba(60,80,100,.1)',
+   patches:[E(-4,-9,15,5.5,'#b5c1cd',{soft:.5}),E(14.6,-6.8,8.6,7.8,'#4a3226',{soft:.8}),E(15.4,-9.4,1.6,.8,'#f6f6f6')],
+   eye:{x:16.4,y:-7.8,r:1.7,iris:'#2a1a12'},
+   beak:{t:'dagger',x:20.4,y:-5.8,len:9,d:3,curve:.5,hook:.7,up:'#b8262a',lo:'#a81e24'},
+   tail:{x:-18,y:-1,len:14,n:6,spread:.22,w:3.8,col:'#f6f7f9'},
+   wing:{arm:19,pl:30,np:7,fan:.06,pw:3.3,ns:7,sl:9,tips:true,col:{cov:'#b8c4d0',sec:'#b0bcc8',pri:'#eef1f4',tip:'#16161a',trail:'#eef1f4',edge:'#ffffff'},sh:[0,-5.5],fsh:[-2,-8],amp:.95},
+   legs:{t:'tuck',col:'#c8262a'},
+   fact:'Seasonal face-lift: During winter, these gulls lose their signature dark chocolate-brown head hoods entirely, leaving only small dark smudges behind their eyes.'},
+ buzzard:{name:'Common Buzzard',sci:'Buteo buteo',group:'Common',scale:1.04,
+   body:{f:13,r:21,t:11.5,u:12},head:{x:15.5,y:-6.8,r:8.2},
+   col:{back:'#5a3e28',mid:'#7a5a3e',belly:'#c8ac8a'},tex:'rgba(255,230,200,.07)',
+   patches:[E(15,-6.8,8.6,8,'#6a4a30',{soft:.6}),E(10,3,10,4,'#e8d8bc',{soft:.6}),
+     {t:'f',fn:c=>{c.strokeStyle='rgba(60,36,20,.55)';c.lineWidth=.8;for(let i=0;i<7;i++){c.beginPath();c.moveTo(14-i*2.6,-1+i*.5);c.lineTo(13-i*2.6,2+i*.5);c.stroke();}}}],
+   eye:{x:18.4,y:-8,r:2,iris:'#5a3a1a',brow:'#4a3220'},
+   beak:{t:'hook',x:21.8,y:-5.8,len:9,d:6,hook:2.6,up:'#2a2622',lo:'#3a3430',cere:'#f2c83a'},
+   tail:{x:-20,y:-1,len:20,n:8,spread:.3,w:4.4,col:'#8a6a4a',bars:'#3a2818'},
+   wing:{arm:22,pl:32,np:7,fan:.13,pw:4.6,ns:8,sl:13,fingers:true,col:{cov:'#5e4230',sec:'#4a3424',pri:'#2a1e16',edge:'#a88a6a'},sh:[0,-6],fsh:[-2,-9],amp:.85},
+   legs:{t:'talon',col:'#f2c83a',fur:'#7a5a3e'},
+   fact:'Color shape-shifters: Buzzard plumage exhibits extreme polymorphism; individuals in the same local population can vary from almost completely dark brown to striking cream-white.'},
+ kestrel:{name:'Eurasian Kestrel',sci:'Falco tinnunculus',group:'Common',
+   body:{f:12,r:18,t:10,u:10.5},head:{x:14,y:-6.5,r:7.6},
+   col:{back:'#b8643a',mid:'#d8a070',belly:'#f0d4b0'},
+   patches:[E(14,-7,8,7.4,'#8a96a8',{soft:.6}),{t:'s',pts:[[15.8,-6],[15.2,-2.6],[14,-.3]],w:1.4,c:'#1c1c22'},
+     {t:'f',fn:c=>{c.fillStyle='rgba(28,18,12,.75)';for(let i=0;i<14;i++){const x=-12+((i*29)%22),y=-8+((i*41)%7);c.beginPath();c.ellipse(x,y,.9,.6,0,0,TAU);c.fill();}for(let i=0;i<8;i++){c.beginPath();c.ellipse(4+((i*23)%10),2+((i*17)%7),.7,.5,0,0,TAU);c.fill();}}}],
+   eye:{x:16.4,y:-7.8,r:2.1,iris:'#2a1a12',ring:'#f2c83a',rw:.7},
+   beak:{t:'hook',x:20,y:-5.6,len:6.5,d:4.6,hook:2,up:'#4a5060',lo:'#3a3e4a',cere:'#f2c83a'},
+   tail:{x:-17,y:-1,len:26,n:6,spread:.14,w:3.8,col:'#8a96a8',col2:'#1c1c22',band:.86},
+   wing:{arm:18,pl:28,np:7,fan:.06,pw:3.2,ns:6,sl:9,spots:'#1c1410',col:{cov:'#b8643a',sec:'#a05432',pri:'#2a2220',edge:'#e8b888'},sh:[0,-5.5],fsh:[-2,-8.5],amp:1},
+   legs:{t:'tuck',col:'#f2c83a'},
+   fact:'UV vision hunters: Kestrels can see ultraviolet light, enabling them to track the UV-reflective urine trails left by voles and mice across open ground from high in the air.'},
 };
-const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','booby','macaw','vulture','pitta','jay','frigate','flamingo','tern','kingfisher','toucan','beeeater','eagle'];
+const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','blackbird','greattit','bluetit','chaffinch','starling','wren','swallow','swift','magpie','woodpigeon','collareddove','mallard','muteswan','bhgull','buzzard','kestrel','booby','macaw','vulture','pitta','jay','frigate','flamingo','tern','kingfisher','toucan','beeeater','eagle'];
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
@@ -1250,7 +1421,7 @@ function skThumb(id){const sp=spDef(id),W0=110,H0=78,dpr=Math.min(2,window.devic
   const g=cv2.getContext('2d'),bx=unionBox(sp),k=Math.min(W0*.94/bx.w,H0*.94/bx.h);g.scale(dpr,dpr);g.translate(W0/2-(bx.x+bx.w/2)*k,H0/2-(bx.y+bx.h/2)*k);g.scale(k,k);drawSpeciesFull(g,sp,.3,false);return cv2;}
 function buildSkins(){
   for(const id of SKIN_ORDER){const sp=SPECIES[id],d=document.createElement('div');d.className='card';d.dataset.id=id;d.appendChild(skThumb(id));
-    const n=document.createElement('span');n.textContent=sp.name.replace(/^(European|American|Magnificent|Oriental|Toco|Scarlet|Carrion|Herring|House|Rock) /,'');d.appendChild(n);
+    const n=document.createElement('span');n.textContent=sp.short||sp.name.replace(/^(European|American|Magnificent|Oriental|Toco|Scarlet|Carrion|Herring|House|Rock|Common|Eurasian|Barn|Mute) /,'');d.appendChild(n);
     (sp.group==='Common'?document.getElementById('skG1'):document.getElementById('skG2')).appendChild(d);}
   skBuilt=true;
 }
