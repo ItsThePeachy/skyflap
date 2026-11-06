@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.5.1",
-  "notes": "iPhone home-screen app, notch and home-bar support",
+  "version": "1.5.2",
+  "notes": "Smoother pipes: removed the shimmer",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "c09badeefb2afadb83d0c838169f9da3bc0414c0ac5be8fd2beca3dc6ec69b5d",
-    "size": 173653
+    "sha256": "049ae45a606ce120664864ce0c13c0041136a4972fb993a46cee416b893d74ed",
+    "size": 173872
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
@@ -18,14 +18,14 @@
  "android": {
   "version": "1.5.0",
   "versionCode": 6,
-  "notes": "iPhone home-screen app, notch and home-bar support",
+  "notes": "Smoother pipes: removed the shimmer",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
   "sha256": "11ec8fd317925f6e66fd6c54933834474e1828e09de82f5bbc3aff49a676c037",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.0",
-  "notes": "iPhone home-screen app, notch and home-bar support",
+  "notes": "Smoother pipes: removed the shimmer",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
    "sha256": "3631894673b3db9700442c719e8b4810f9a0138e7cd631661596309709c4098d",

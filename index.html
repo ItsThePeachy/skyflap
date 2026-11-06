@@ -84,7 +84,7 @@
 <div id="skins"><div class="panel"><div class="hd"><b>Skins</b><button class="x" id="skX" aria-label="Close">✕</button></div><div class="pv"><canvas id="skPv"></canvas><button class="eq" id="skE">Equip</button><div class="info"><div class="nm" id="skN"></div><div class="sci" id="skS"></div><div class="fact" id="skF"></div></div></div><div class="body"><div class="sec">Common birds</div><div class="grid" id="skG1"></div><div class="sec">Featured birds</div><div class="grid" id="skG2"></div></div></div></div>
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.5.1';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.5.2';</script>
 <script>
 (() => {
 'use strict';
@@ -604,9 +604,9 @@ const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
-  for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
+  for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.16,'#337a53'],[.23,'#7fcca0'],[.3,'#cdeedb'],[.37,'#78c69a'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
 function buildPipeTex(){
-  const R=Math.min(S,2.4),ov=7,cw=PW+ov*2,cap=30,ao=18;
+  const R=Math.min(S,3.5),ov=7,cw=PW+ov*2,cap=30,ao=18;
   const body=mk(PW,640,R,g=>{g.fillStyle=pipeGrad(g,0,PW);g.fillRect(0,0,PW,640);g.globalAlpha=.9;g.fillStyle=g.createPattern(grime,'repeat');g.fillRect(0,0,PW,640);g.globalAlpha=1;
     for(let y=130;y<640;y+=130){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,y,PW,2);g.fillStyle='rgba(255,255,255,.12)';g.fillRect(0,y+2,PW,1);}});
   const capD=(g,y)=>{g.fillStyle=pipeGrad(g,0,cw);rrect(g,0,y,cw,cap,3);g.fill();
@@ -637,12 +637,12 @@ function resize(){
   skyC=document.createElement('canvas');skyC.width=Math.ceil(W*S*Q.sky);skyC.height=Math.ceil((GY+12)*S*Q.sky);skyX=skyC.getContext('2d',{alpha:false});skyAge=99;
   srcSpr=null;
   if(Q.vol){const vs=.14;vA=document.createElement('canvas');vB=document.createElement('canvas');vA.width=vB.width=Math.ceil(W*S*vs);vA.height=vB.height=Math.ceil((GY+10)*S*vs);vAx=vA.getContext('2d');vBx=vB.getContext('2d');}else vA=null;
-  if(Q.refl){reflC=document.createElement('canvas');reflC.width=Math.ceil(cv.width*Q.refl);reflC.height=Math.ceil(GH*S*Q.refl);reflX=reflC.getContext('2d',{alpha:false});}else reflC=null;
+  if(Q.refl){reflC=document.createElement('canvas');reflC.width=Math.ceil(cv.width*Q.refl);reflC.height=Math.ceil(GH*S*Q.refl);reflX=reflC.getContext('2d',{alpha:false});reflX.imageSmoothingQuality='high';}else reflC=null;
   gvC=document.createElement('canvas');gvC.width=Math.ceil(W*S*.15);gvC.height=Math.ceil(H*S*.15);gvX=gvC.getContext('2d',{alpha:false});gvKey='';
   vigC=mk(W,H,.15*S,g=>{const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.45,Math.max(W,H)*.78);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,12,.42)');g.fillStyle=vg;g.fillRect(0,0,W,H);});
   if(Q.blur&&FILTER){snap=document.createElement('canvas');snap.width=cv.width;snap.height=cv.height;snapc=snap.getContext('2d');}else snap=null;
   if(Q.bloom){bA=document.createElement('canvas');bB=document.createElement('canvas');bA.width=Math.max(2,cv.width>>3);bA.height=Math.max(2,cv.height>>3);
-    bB.width=Math.max(2,cv.width>>5);bB.height=Math.max(2,cv.height>>5);bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
+    bB.width=Math.max(2,cv.width>>5);bB.height=Math.max(2,cv.height>>5);bAc=bA.getContext('2d');bBc=bB.getContext('2d');bAc.imageSmoothingQuality=bBc.imageSmoothingQuality='high';}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
   tcache.clear();buildPipeTex();buildBirdSprites();
@@ -895,10 +895,11 @@ function drawMotes(c,P,sun){
   for(let i=0;i<n;i++){const m=motes[i],x=((m.x*W*1.4-scroll*m.p*.3+Math.sin(time*.4+m.ph)*20)%(W+40)+W+40)%(W+40)-20,y=m.y+Math.sin(time*.6+m.ph)*14;c.moveTo(x+m.r,y);c.arc(x,y,m.r,0,7);}c.fill();
 }
 function drawPipe(c,p){
-  const x=p.x,top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,T=pipeTex;
-  const body=(y0,y1)=>{const h=Math.min(y1-y0,640);if(h<=0)return;const sy=(p.seed*(640-h))|0;c.drawImage(T.body,0,sy*T.R,T.body.width,h*T.R,x,y0,PW,h);};
-  body(-20,top-cap);c.drawImage(T.capT,x-ov,top-cap-ao,PW+ov*2,cap+ao);
-  body(bot+cap,GY+8);c.drawImage(T.capB,x-ov,bot,PW+ov*2,cap+ao);
+  const sc=c.getTransform().a||S,x=Math.round(p.x*sc)/sc,top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,T=pipeTex;
+  const bw=T.body.width/T.R,cw2=T.capT.width/T.R,ch2=T.capT.height/T.R;
+  const body=(y0,y1)=>{const h=Math.min(y1-y0,640);if(h<=0)return;const sy=(p.seed*(640-h))|0;c.drawImage(T.body,0,Math.round(sy*T.R),T.body.width,Math.round(h*T.R),x,y0,bw,h);};
+  body(-20,top-cap);c.drawImage(T.capT,x-ov,top-cap-ao,cw2,ch2);
+  body(bot+cap,GY+8);c.drawImage(T.capB,x-ov,bot,cw2,ch2);
 }
 function drawBird(c){
   const b=bird,dead=state==='dead',B=birdSpr;
