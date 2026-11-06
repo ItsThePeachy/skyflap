@@ -85,7 +85,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.7.0';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.7.1';</script>
 <script>
 (() => {
 'use strict';
@@ -1004,9 +1004,9 @@ function renderReflBand(P){
   X.drawImage(skyC,-2,-2,W+4,GY+16);
   drawClouds(X,false);drawLayer(X,LAYERS[0],P);drawClouds(X,true);
   for(let i=1;i<4;i++)drawLayer(X,LAYERS[i],P);
+  if(volOut){X.globalCompositeOperation='lighter';X.globalAlpha=volA;X.drawImage(volOut,0,0,W,GY+10);X.globalAlpha=1;X.globalCompositeOperation='source-over';}
   for(const p of pipes)drawPipe(X,p);
   if(bird.y>GY-GH-30)drawBird(X);
-  if(volOut){X.globalCompositeOperation='lighter';X.globalAlpha=volA;X.drawImage(volOut,0,0,W,GY+10);X.globalAlpha=1;X.globalCompositeOperation='source-over';}
 }
 
 function drawWater(P,sun){
@@ -1131,12 +1131,12 @@ function render(){
   drawLayer(c,LAYERS[1],P);
   drawLayer(c,LAYERS[2],P);
   drawLayer(c,LAYERS[3],P);
+  volLight(c,P,sun);   // light shafts live in the air behind the pipes/bird: they no longer streak across the pipes
   drawMotes(c,P,sun);
   for(const p of pipes)drawPipe(c,p);
   drawParts(c);
   if(P.star>.3){c.globalCompositeOperation='lighter';c.globalAlpha=.3*P.star;c.drawImage(glow,bird.x-60,bird.y-60,120,120);c.globalAlpha=1;c.globalCompositeOperation='source-over';}
   drawBird(c);
-  volLight(c,P,sun);
   drawWater(P,sun);
   const graded=P.gr!=='#ffffff';
   if(graded&&!Q.vignette){c.globalCompositeOperation='multiply';c.fillStyle=P.gr;c.fillRect(0,0,W,H);c.globalCompositeOperation='source-over';}

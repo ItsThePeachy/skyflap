@@ -1,1 +1,1 @@
-{"version": "1.7.0", "notes": "Bloom glow is now temporally smoothed, removing the frame-to-frame flicker on the pipes some GPUs showed."}
+{"version": "1.7.1", "notes": "Pipe shimmer fix: volumetric light shafts are now drawn behind the pipes and bird instead of on top, so light streaks no longer slide across the pipes. Keeps the smoother bloom."}
