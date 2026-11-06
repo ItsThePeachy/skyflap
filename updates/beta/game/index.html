@@ -74,7 +74,8 @@
 <div id="skins"><div class="panel"><div class="hd"><b>Skins</b><button class="x" id="skX" aria-label="Close">✕</button></div><div class="pv"><canvas id="skPv"></canvas><button class="eq" id="skE">Equip</button><div class="info"><div class="nm" id="skN"></div><div class="sci" id="skS"></div><div class="fact" id="skF"></div></div></div><div class="body"><div class="sec">Common birds</div><div class="grid" id="skG1"></div><div class="sec">Featured birds</div><div class="grid" id="skG2"></div></div></div></div>
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.5.6';</script>
+<script src="calls.js"></script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.0';</script>
 <script>
 (() => {
 'use strict';
@@ -673,7 +674,20 @@ function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAud
   if(ac&&ac.state==='suspended'&&!document.hidden)ac.resume().catch(()=>{});loadSamples();}
 function applyVolumes(){if(!ac)return;const t=ac.currentTime;sfxBus.gain.setTargetAtTime(muted?0:SFXV[+set.sfxv],t,.05);ambBus.gain.setTargetAtTime(muted?0:AMBV[+set.amb],t,.4);}
 function leadIn(buf){const d=buf.getChannelData(0),n=Math.min(d.length,buf.sampleRate*.25|0);for(let i=0;i<n;i++)if(Math.abs(d[i])>.004)return Math.max(0,i-8)/buf.sampleRate;return 0;}
+function b64buf(b){const bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;}
+function decodeB64(b,done){let once=false;const d=x=>{if(!once&&x){once=true;done(x);}};try{const pr=ac.decodeAudioData(b64buf(b),d,()=>{});if(pr&&pr.then)pr.then(d,()=>{});if(pr&&pr.catch)pr.catch(()=>{});}catch(e){}}
+const CALLS={},callLoading={};let callSrc=null,callLast={};
+function loadCalls(id,cb){const C=window.SKY_CALLS&&window.SKY_CALLS[id];if(!ac||!C)return;if(CALLS[id]){cb&&cb();return;}if(callLoading[id]){if(cb)callLoading[id].push(cb);return;}
+  callLoading[id]=cb?[cb]:[];const out={hs:[],ten:[],crash:[]};let left=0;for(const ev in out)left+=C[ev].length;
+  for(const ev in out)C[ev].forEach((b,i)=>decodeB64(b,buf=>{out[ev][i]={buf,off:leadIn(buf)};if(--left===0){CALLS[id]=out;callLoading[id].forEach(f=>f());delete callLoading[id];}}));}
+function birdCall(ev,id,vol=.9){id=id||set.skin;const C=CALLS[id];if(!C){loadCalls(id);return false;}if(!ac||muted)return false;
+  const L=C[ev].filter(Boolean);if(!L.length)return false;let k=Math.random()*L.length|0;const key=id+ev;if(L.length>1&&k===callLast[key])k=(k+1)%L.length;callLast[key]=k;
+  if(callSrc){try{const o=callSrc;o.g.gain.setTargetAtTime(0,ac.currentTime,.03);o.s.stop(ac.currentTime+.15);}catch(e){}}
+  const s=ac.createBufferSource();s.buffer=L[k].buf;s.playbackRate.value=rnd(.96,1.04);const g=ac.createGain();g.gain.value=vol;s.connect(g).connect(sfxBus);s.start(0,L[k].off);
+  callSrc={s,g};s.onended=()=>{if(callSrc&&callSrc.s===s)callSrc=null;};return true;}
 function loadSamples(){
+  if(ac)loadCalls(set.skin);
+  if(ac&&window.SKY_PLUNK&&!SND.plunk){SND.plunk={};decodeB64(window.SKY_PLUNK,buf=>{SND.plunk={buf,off:leadIn(buf)};});}
   if(!ac||samplesLoading||!window.SKY_SND)return;samplesLoading=true;
   for(const k in window.SKY_SND){const bin=atob(window.SKY_SND[k]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
     const done=buf=>{SND[k]={buf,off:leadIn(buf)};if(window.SKY_LOOPS&&window.SKY_LOOPS[k])startAmb(k,buf,window.SKY_LOOPS[k]);};
@@ -687,7 +701,7 @@ function ambUpdate(){
   const lv={birds:.9*birds,night:.75*night,wind:.32+.22*clamp(speed/260,0,1)+.12*P.star,stream:.42};
   for(const k in AMB)AMB[k].gain.setTargetAtTime(lv[k]||0,t,.8);
 }
-function play(k,vol=1,rate=1){const smp=SND[k];if(!smp||!ac||muted)return false;const src=ac.createBufferSource();src.buffer=smp.buf;src.playbackRate.value=rate;
+function play(k,vol=1,rate=1){const smp=SND[k];if(!smp||!smp.buf||!ac||muted)return false;const src=ac.createBufferSource();src.buffer=smp.buf;src.playbackRate.value=rate;
   const g=ac.createGain();g.gain.value=vol;src.connect(g).connect(sfxBus);src.start(0,smp.off);return true;}
 function tone(f1,f2,dur,type='sine',vol=.2,delay=0){if(!ac||muted)return;const t=ac.currentTime+delay;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
   o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0008,t+dur);
@@ -699,8 +713,8 @@ const sfx={
   score(){tone(1760,1760,.08,'sine',.07);tone(2349,2349,.16,'sine',.06,.07);},
   milestone(){[1175,1480,1760,2349].forEach((f,i)=>tone(f,f,.14,'sine',.07,i*.07));},
   hit(){play('thunk',1,rnd(.8,.95));nz(.2,.35,600);tone(160,50,.3,'sine',.16);},
-  splash(){if(!play('splash'+(1+(Math.random()*3|0)),1,rnd(.9,1.05))){nz(.6,.45,1400);nz(.3,.3,400);}},
-  drop(){play('splash'+(1+(Math.random()*3|0)),.18,rnd(1.6,2.2));},
+  splash(){if(!play('plunk',1,rnd(.98,1.02))){nz(.6,.45,700);tone(120,320,.2,'sine',.25);}},
+  drop(){play('plunk',.06,rnd(2.6,3.2));},
   swoosh(){if(!play('swish',.7,rnd(.9,1)))nz(.35,.12,900,'bandpass');},
   best(){[1047,1319,1568,2093].forEach((f,i)=>tone(f,f,.2,'sine',.06,.15+i*.1));}
 };
@@ -722,7 +736,7 @@ function paletteCalc(p){
 
 // ---------- state ----------
 let state='menu',paused=false,time=0,phase=0,scroll=0,speed=110;
-let bird,pipes=[],parts=[],drops=[],ripples=[],pops=[],score=0,deadT=0,shake=0,flash=0,newBest=false,lastGap=0;
+let hsPlayed=false,bird,pipes=[],parts=[],drops=[],ripples=[],pops=[],score=0,deadT=0,shake=0,flash=0,newBest=false,lastGap=0;
 const clouds=[];for(let i=0;i<8;i++)clouds.push({x:rnd(-100,1500),y:rnd(30,260),s:rnd(.55,1.25),p:rnd(.06,.3),spr:i%6,a:rnd(.75,1)});
 const stars=[];for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random()*.75,r:Math.random()<.92?rnd(.35,1):rnd(1,1.8),tw:rnd(0,6.28),c:Math.random()<.2?'#cfe0ff':Math.random()<.2?'#ffe8cf':'#ffffff'});
 const motes=[];for(let i=0;i<55;i++)motes.push({x:Math.random(),y:rnd(60,GY-20),r:rnd(.6,1.8),ph:rnd(0,6.28),p:rnd(.2,.8)});
@@ -730,7 +744,7 @@ const birdX=()=>clamp(W*.28,85,230);
 function resetBird(){bird={x:birdX(),y:H*.42,vy:0,rot:0,wing:0,squash:0,inWater:false};}
 resetBird();
 
-function startGame(){phase=set.tod==='cycle'?0:TOD[set.tod];skyAge=99;state='play';paused=false;score=0;pipes=[];pops=[];newBest=false;deadT=0;resetBird();lastGap=H*.42;spawnPipe(W+140);flap();}
+function startGame(){phase=set.tod==='cycle'?0:TOD[set.tod];skyAge=99;state='play';paused=false;score=0;pipes=[];pops=[];newBest=false;hsPlayed=false;deadT=0;resetBird();lastGap=H*.42;spawnPipe(W+140);flap();}
 const gapSize=()=>Math.max(134,175-score*1.1);
 function spawnPipe(x){const gap=gapSize(),min=90+gap/2,max=GY-70-gap/2;const y=clamp(lastGap+rnd(-190,190),min,max);lastGap=y;pipes.push({x,gy:y,gap,scored:false,seed:Math.random()});}
 function flap(){bird.vy=FLAP;bird.squash=1;sfx.flap();
@@ -741,6 +755,7 @@ function die(inWater){
   if(state!=='play')return;state='dead';deadT=0;shake=13;flash=.9;
   if(inWater){bird.inWater=true;bird.vy=0;splash(bird.x);}
   else{sfx.hit();bird.vy=-240;for(let i=0;i<18;i++){const a=rnd(0,Math.PI*2),v=rnd(80,340);parts.push({t:'feather',x:bird.x,y:bird.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-120,life:0,max:rnd(1.2,2),s:rnd(4,8),r:rnd(0,6),vr:rnd(-7,7),c:['#8a6a44','#e8642a','#6e5234','#f2e6d2'][i%4]});}}
+  setTimeout(()=>birdCall('crash'),inWater?260:110);
   if(score>best){best=score;newBest=true;saveBest();}
   setTimeout(()=>{if(state==='dead')sfx.swoosh();},500);if(newBest)setTimeout(()=>{if(state==='dead')sfx.best();},850);
 }
@@ -784,7 +799,8 @@ function update(dt){
     const last=pipes[pipes.length-1];if(last.x<W-238)spawnPipe(last.x+238);
     for(const p of pipes){
       if(!p.scored&&p.x+PW/2<bird.x){p.scored=true;score++;
-        if(score%10===0){sfx.milestone();pops.push({x:W/2,y:165,s:score+'!',life:0});}else sfx.score();
+        const hsNow=!hsPlayed&&best>0&&score===best+1;if(hsNow){hsPlayed=true;birdCall('hs',null,1);pops.push({x:W/2,y:165,s:'NEW BEST!',life:0});}
+        if(score%10===0){sfx.milestone();if(!hsNow){birdCall('ten');pops.push({x:W/2,y:165,s:score+'!',life:0});}}else sfx.score();
         for(let i=0;i<10;i++){const a=rnd(0,Math.PI*2),v=rnd(40,170);parts.push({t:'spark',x:p.x+PW/2,y:p.gy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:0,max:rnd(.3,.7),s:rnd(1,2.6)});}}
       if(circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900)){die(false);break;}
     }
@@ -1160,7 +1176,7 @@ function buildSettings(){
     if(it.sec){h+=`<div class="sec">${it.sec}</div>`;continue;}
     if(it.updates){const u=updState||{},st={checking:'Checking\u2026',downloading:'Downloading'+(u.progress?` ${Math.round(u.progress*100)}%`:'\u2026'),ready:`Version ${u.ready&&u.ready.version} ready, restart to apply`,app:`App update ${u.app&&u.app.version} available`,uptodate:'You\u2019re up to date',error:'Couldn\u2019t check, '+(u.error||'offline?')}[u.status]||'';
       h+=`<div class="row col"><div id="updVer"><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}${set.channel==='beta'||IS_BETA_WEB?' \u00b7 <b style="color:#ffb27a">TEST</b>':''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
-    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; splashes from a CC0 water pack.</div>`;continue;}
+    if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">All sounds are CC0 / public domain. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; splash from a CC0 water pack (pitched down and layered). Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
     else{const cur=it.k==='preset'&&v==='custom'?'<span class="tag l">CUSTOM</span>':'';
@@ -1226,8 +1242,8 @@ function skFrame(t){
 }
 function openSkins(){if(!skBuilt)buildSkins();skSel=set.skin;skOpen=true;skEl.classList.add('open');skRefresh();requestAnimationFrame(skFrame);}
 function closeSkins(){skOpen=false;skEl.classList.remove('open');}
-skEl.addEventListener('click',e=>{const d=e.target.closest('.card');if(d){skSel=d.dataset.id;skRefresh();}});
-skE.addEventListener('click',()=>{if(set.skin===skSel)return;set.skin=skSel;saveSet();buildBirdSprites();skRefresh();});
+skEl.addEventListener('click',e=>{const d=e.target.closest('.card');if(d){skSel=d.dataset.id;skRefresh();ensureAudio();const id=skSel;loadCalls(id,()=>{if(skOpen&&skSel===id)birdCall('ten',id,.8);});}});
+skE.addEventListener('click',()=>{if(set.skin===skSel)return;set.skin=skSel;saveSet();buildBirdSprites();skRefresh();loadCalls(set.skin);});
 document.getElementById('skX').addEventListener('click',closeSkins);
 skEl.addEventListener('pointerdown',e=>{if(e.target===skEl)closeSkins();e.stopPropagation();});
 
