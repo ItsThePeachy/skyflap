@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.1",
-  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
+  "version": "1.6.2",
+  "notes": "Frame rate limit fixed: 60 now really gives 60 FPS on 90/144 Hz screens (was 45/48), and auto quality no longer lowers graphics because of it. Includes species bird calls and the deep splash.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "fe369df77a1fcf9ae9dc101b241329da3bac9dbbdb285a9febd6e14a3df110ed",
-    "size": 176969
+    "sha256": "340a029414f6c32502b4b125deeb1464dcd20c23bdfcd5f8ce1330f24bdd80ec",
+    "size": 177011
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
+  "notes": "Frame rate limit fixed: 60 now really gives 60 FPS on 90/144 Hz screens (was 45/48), and auto quality no longer lowers graphics because of it. Includes species bird calls and the deep splash.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
+  "notes": "Frame rate limit fixed: 60 now really gives 60 FPS on 90/144 Hz screens (was 45/48), and auto quality no longer lowers graphics because of it. Includes species bird calls and the deep splash.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

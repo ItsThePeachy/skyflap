@@ -1,1 +1,1 @@
-{"version": "1.6.1", "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash."}
+{"version": "1.6.2", "notes": "Frame rate limit fixed: 60 now really gives 60 FPS on 90/144 Hz screens (was 45/48), and auto quality no longer lowers graphics because of it. Includes species bird calls and the deep splash."}

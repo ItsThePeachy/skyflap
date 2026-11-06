@@ -85,7 +85,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.1';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.2';</script>
 <script>
 (() => {
 'use strict';
@@ -1306,7 +1306,7 @@ let last=performance.now(),perfAcc=0,perfN=-60,fpsN=0,fpsT=0,fpsTxt='',fpsVal=0;
 let lastR=-1e9;
 function loop(now){
   requestAnimationFrame(loop);
-  const cap=set.cap==='max'?0:+set.cap;if(cap&&now-lastR<1000/cap-2)return;lastR=now;
+  const cap=set.cap==='max'?0:+set.cap;if(cap){const iv=1000/cap;if(now-lastR<iv-1.5)return;lastR=now-lastR>iv*2?now:lastR+iv;}
   const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
   update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
