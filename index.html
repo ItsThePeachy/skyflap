@@ -84,7 +84,7 @@
 <div id="skins"><div class="panel"><div class="hd"><b>Skins</b><button class="x" id="skX" aria-label="Close">✕</button></div><div class="pv"><canvas id="skPv"></canvas><button class="eq" id="skE">Equip</button><div class="info"><div class="nm" id="skN"></div><div class="sci" id="skS"></div><div class="fact" id="skF"></div></div></div><div class="body"><div class="sec">Common birds</div><div class="grid" id="skG1"></div><div class="sec">Featured birds</div><div class="grid" id="skG2"></div></div></div></div>
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.5.2';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.5.3';</script>
 <script>
 (() => {
 'use strict';
@@ -130,7 +130,7 @@ function computeQ(){const base=set.res==='native'?3:+set.res,l=+set.refl;
 computeQ();
 
 // ---------- static textures ----------
-const grime=document.createElement('canvas');grime.width=128;grime.height=512;
+const grime=document.createElement('canvas');grime.width=128;grime.height=512;let grimeSoft=null,grimeSoftPat=null;
 (()=>{const g=grime.getContext('2d');
   for(let i=0;i<90;i++){const x=Math.random()*128,y=Math.random()*512,l=20+Math.random()*140;
     const gr=g.createLinearGradient(0,y,0,y+l);gr.addColorStop(0,'rgba(50,30,12,0)');gr.addColorStop(.25,`rgba(50,30,12,${.05+Math.random()*.18})`);gr.addColorStop(1,'rgba(50,30,12,0)');
@@ -645,7 +645,7 @@ function resize(){
     bB.width=Math.max(2,cv.width>>5);bB.height=Math.max(2,cv.height>>5);bAc=bA.getContext('2d');bBc=bB.getContext('2d');bAc.imageSmoothingQuality=bBc.imageSmoothingQuality='high';}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
-  tcache.clear();buildPipeTex();buildBirdSprites();
+  tcache.clear();buildBirdSprites();
 }
 addEventListener('resize',resize);resize();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>tcache.clear());
@@ -883,7 +883,7 @@ function drawLayer(c,L,P){
   const key=L.key(P);let shift=(scroll-L.sc)*L.par;
   if(L.gen!==layerGen){L.cv=null;L.gen=layerGen;}
   if(!L.cv||shift>LPAD-4||shift<0||(key!==L.k&&frame-L.f>=4)){paintLayer(L,P,key);shift=0;}
-  c.drawImage(L.cv,-Math.round(shift*S)/S,L.y0,W+LPAD,L.y1-L.y0);
+  c.drawImage(L.cv,-shift,L.y0,W+LPAD,L.y1-L.y0);
 }
 function drawMotes(c,P,sun){
   const day=sun.a*(1-P.star),n=Q.motes;
@@ -894,12 +894,35 @@ function drawMotes(c,P,sun){
   if(day<.05)return;c.fillStyle=`rgba(255,245,220,${.35*day})`;c.beginPath();
   for(let i=0;i<n;i++){const m=motes[i],x=((m.x*W*1.4-scroll*m.p*.3+Math.sin(time*.4+m.ph)*20)%(W+40)+W+40)%(W+40)-20,y=m.y+Math.sin(time*.6+m.ph)*14;c.moveTo(x+m.r,y);c.arc(x,y,m.r,0,7);}c.fill();
 }
+function softGrime(){
+  if(grimeSoftPat)return grimeSoftPat;
+  grimeSoft=document.createElement('canvas');grimeSoft.width=64;grimeSoft.height=256;const g=grimeSoft.getContext('2d');
+  g.imageSmoothingQuality='high';g.drawImage(grime,0,0,64,256);                 // half-res = low-pass
+  if(FILTER){const t=document.createElement('canvas');t.width=64;t.height=256;const tg=t.getContext('2d');tg.filter='blur(.8px)';tg.drawImage(grimeSoft,0,0);g.clearRect(0,0,64,256);g.drawImage(t,0,0);}
+  grimeSoftPat=ctx.createPattern(grimeSoft,'repeat');return grimeSoftPat;
+}
+// Pipes are drawn analytically every frame (gradients + simple shapes): identical at any sub-pixel position,
+// so they glide smoothly with the rest of the world and never shimmer.
 function drawPipe(c,p){
-  const sc=c.getTransform().a||S,x=Math.round(p.x*sc)/sc,top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,T=pipeTex;
-  const bw=T.body.width/T.R,cw2=T.capT.width/T.R,ch2=T.capT.height/T.R;
-  const body=(y0,y1)=>{const h=Math.min(y1-y0,640);if(h<=0)return;const sy=(p.seed*(640-h))|0;c.drawImage(T.body,0,Math.round(sy*T.R),T.body.width,Math.round(h*T.R),x,y0,bw,h);};
-  body(-20,top-cap);c.drawImage(T.capT,x-ov,top-cap-ao,cw2,ch2);
-  body(bot+cap,GY+8);c.drawImage(T.capB,x-ov,bot,cw2,ch2);
+  const x=p.x,top=p.gy-p.gap/2,bot=p.gy+p.gap/2,cap=30,ov=7,ao=18,cw=PW+ov*2,y1=top-cap,y2=bot+cap,yb=GY+8;
+  c.fillStyle=pipeGrad(c,x,x+PW);c.fillRect(x,-20,PW,y1+20);c.fillRect(x,y2,PW,yb-y2);
+  c.save();c.beginPath();c.rect(x,-20,PW,y1+20);c.rect(x,y2,PW,yb-y2);c.clip();
+  c.translate(x,p.seed*256);c.scale(PW/64,2);c.globalAlpha=.7;c.fillStyle=softGrime();c.fillRect(0,-400,64,800);c.restore();
+  c.fillStyle='rgba(0,0,0,.3)';for(let y=130;y<640;y+=130){if(y>y1-4&&y<y2+4)continue;if(y<yb)c.fillRect(x,y,PW,1.6);}
+  c.fillStyle='rgba(255,255,255,.1)';for(let y=131.6;y<640;y+=130){if(y>y1-4&&y<y2+4)continue;if(y<yb)c.fillRect(x,y,PW,1);}
+  let g=c.createLinearGradient(0,y1,0,y1-ao);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x,y1-ao,PW,ao);
+  g=c.createLinearGradient(0,y2,0,y2+ao);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x,y2,PW,ao);
+  const cg=pipeGrad(c,x-ov,x-ov+cw);
+  for(const y of [y1,bot]){
+    c.fillStyle=cg;rrect(c,x-ov,y,cw,cap,3);c.fill();
+    c.fillStyle='rgba(255,255,255,.26)';c.fillRect(x-ov+2,y+1,cw-4,1.4);
+    c.fillStyle='rgba(0,0,0,.42)';c.fillRect(x-ov,y+cap-2.2,cw,2.2);
+    c.fillStyle='rgba(0,0,0,.22)';c.fillRect(x-ov,y+cap*.5-.5,cw,1);
+    for(const f of [.1,.36,.64,.9]){const bx=x-ov+cw*f,by=y+cap*.5;
+      c.fillStyle='rgba(0,0,0,.38)';c.beginPath();c.arc(bx+.5,by+.7,2.7,0,7);c.fill();
+      c.fillStyle='#5f9c7c';c.beginPath();c.arc(bx,by,2.5,0,7);c.fill();
+      c.fillStyle='rgba(225,255,238,.75)';c.beginPath();c.arc(bx-.7,by-.7,1.1,0,7);c.fill();}
+  }
 }
 function drawBird(c){
   const b=bird,dead=state==='dead',B=birdSpr;
@@ -1280,11 +1303,11 @@ if(host){
 }
 // ---------- loop with automatic quality scaling ----------
 let last=performance.now(),perfAcc=0,perfN=-60,fpsN=0,fpsT=0,fpsTxt='',fpsVal=0;
-let lastR=-1e9;
+let lastR=-1e9,dtS=0;
 function loop(now){
   requestAnimationFrame(loop);
   const cap=set.cap==='max'?0:+set.cap;if(cap&&now-lastR<1000/cap-2)return;lastR=now;
-  const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
+  const raw=(now-last)/1000;last=now;if(!(dtS>0)||Math.abs(raw-dtS)>dtS*.5)dtS=raw;else dtS+=(raw-dtS)*.15;const dt=clamp(dtS,0,1/30);
   update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
   if(host&&(frame&15)===0)updRender();
