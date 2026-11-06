@@ -1,1 +1,1 @@
-{"version": "1.7.1", "notes": "Pipe shimmer fix: volumetric light shafts are now drawn behind the pipes and bird instead of on top, so light streaks no longer slide across the pipes. Keeps the smoother bloom."}
+{"version": "1.7.2", "notes": "Pipe shimmer fix (bloom): the glow is now computed from the scene before the pipes are drawn, with the pipes as solid silhouettes, so moving pipes can no longer make the bloom pulse."}

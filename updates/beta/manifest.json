@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.7.1",
-  "notes": "Pipe shimmer fix: volumetric light shafts are now drawn behind the pipes and bird instead of on top, so light streaks no longer slide across the pipes. Keeps the smoother bloom.",
+  "version": "1.7.2",
+  "notes": "Pipe shimmer fix (bloom): the glow is now computed from the scene before the pipes are drawn, with the pipes as solid silhouettes, so moving pipes can no longer make the bloom pulse.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "e3a08832e781ffcd422e6bb33eb277d1bf230c7426b49c969b39aae750a438ec",
-    "size": 181254
+    "sha256": "c267b0d9028d6360193df38af71462542a9eab2b4f71c6be68c1b05d878bffe4",
+    "size": 181505
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Pipe shimmer fix: volumetric light shafts are now drawn behind the pipes and bird instead of on top, so light streaks no longer slide across the pipes. Keeps the smoother bloom.",
+  "notes": "Pipe shimmer fix (bloom): the glow is now computed from the scene before the pipes are drawn, with the pipes as solid silhouettes, so moving pipes can no longer make the bloom pulse.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Pipe shimmer fix: volumetric light shafts are now drawn behind the pipes and bird instead of on top, so light streaks no longer slide across the pipes. Keeps the smoother bloom.",
+  "notes": "Pipe shimmer fix (bloom): the glow is now computed from the scene before the pipes are drawn, with the pipes as solid silhouettes, so moving pipes can no longer make the bloom pulse.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",
