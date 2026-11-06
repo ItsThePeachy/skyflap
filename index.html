@@ -85,7 +85,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.6.7';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.6.8';</script>
 <script>
 (() => {
 'use strict';
@@ -1307,7 +1307,9 @@ function updRender(){
   if(iosTip&&!updHidden&&state!=='play'){updT.innerHTML='<b>Install Skyflap</b><br>Tap Share \u2192 Add to Home Screen';updGo.textContent='OK';updGo.style.display='';
     updGo.onclick=()=>{updHidden=true;try{localStorage.setItem('skyflap_tip','1');}catch(e){}updRender();};updEl.classList.add('show');return;}
   if(u&&!updHidden&&(state!=='play'||paused)){
-    if(u.status==='installing'){updT.innerHTML=`<b>Downloading app update</b> ${u.progress?Math.round(u.progress*100)+'%':''}`;updGo.style.display='none';show=true;}
+    if(u.status==='restarting'){updT.innerHTML='<b>Update installed</b> – restarting…';updGo.style.display='none';show=true;}
+    else if(u.status==='error'&&u.app){updT.innerHTML=`<b>App update failed</b><br>${(u.error||'').replace(/[<>&]/g,'')}`;updGo.textContent='Retry';updGo.onclick=()=>host.install();updGo.style.display='';show=true;}
+    else if(u.status==='installing'){updT.innerHTML=`<b>Downloading app update</b> ${u.progress?Math.round(u.progress*100)+'%':''}`;updGo.style.display='none';show=true;}
     else if(u.ready){updT.innerHTML=`<b>Skyflap ${u.ready.version}${set.channel==='beta'?' (test)':''}</b> is ready${u.ready.notes?'<br>'+u.ready.notes:''}`;updGo.textContent='Restart';updGo.onclick=()=>host.restart();updGo.style.display='';show=true;}
     else if(u.app){updT.innerHTML=`<b>App update ${u.app.version}</b> available${u.app.notes?'<br>'+u.app.notes:''}`;updGo.textContent='Install';updGo.onclick=()=>host.install();updGo.style.display='';show=true;}
   }

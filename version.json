@@ -1,1 +1,1 @@
-{"version": "1.6.7", "notes": "Every bird now has its own species calls for a new highscore, every 10 points and crashing. New deep water splash. 60 FPS limit fixed on 90/144 Hz screens. Much smoother day/night cycle: the sun glow and background are pre-rendered instead of being redrawn while the light changes."}
+{"version": "1.6.8", "notes": "Windows app updates rebuilt: they now download into your user folder and the app restarts itself (no helper script). Shows an error and Retry button if an update fails."}
