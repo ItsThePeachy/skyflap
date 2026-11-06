@@ -1,1 +1,1 @@
-{"version": "1.6.7", "notes": "Volumetric light shafts back to full quality every frame (the half-rate shafts stuttered). Keeps the pre-rendered sun glow and background fixes."}
+{"version": "1.6.8", "notes": "Windows app updates rebuilt: app updates now download into your user folder and the app restarts itself (no helper script, nothing replaced in the install folder). Shows an error and Retry button if an update fails."}
