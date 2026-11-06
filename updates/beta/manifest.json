@@ -1,35 +1,35 @@
 {
  "game": {
-  "version": "1.6.0",
-  "notes": "Each bird now has its own species calls: one for a new highscore, one every 10 points and one when it crashes (3 variations each). Falling into the water is now a single deep, heavy 'rock into water' splash. Tap a bird in the skin selector to hear it.",
+  "version": "1.6.1",
+  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "b2810bd44fff1110860ef27a9838c3622b0951576dfa640d15b8709e9c7aed54",
-    "size": 177127
+    "sha256": "fe369df77a1fcf9ae9dc101b241329da3bac9dbbdb285a9febd6e14a3df110ed",
+    "size": 176969
    },
    "sounds.js": {
     "sha256": "320ffb0e6f6beeb0bb7b80638d620e4e835fcc64fafc31ec50b3c8c6b2dc2f54",
     "size": 1235864
    },
    "calls.js": {
-    "sha256": "82e5a05e622bca1b4b4076d951539f41583f623f772b281111d09989f8e78648",
-    "size": 970362
+    "sha256": "745e862a2066e3b565c34aaf472150a7e770e8592d8ae63fccfbe9b8128e6ee7",
+    "size": 957161
    }
   }
  },
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Each bird now has its own species calls: one for a new highscore, one every 10 points and one when it crashes (3 variations each). Falling into the water is now a single deep, heavy 'rock into water' splash. Tap a bird in the skin selector to hear it.",
+  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.5.1",
-  "notes": "Each bird now has its own species calls: one for a new highscore, one every 10 points and one when it crashes (3 variations each). Falling into the water is now a single deep, heavy 'rock into water' splash. Tap a bird in the skin selector to hear it.",
+  "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "3486297702e48e6babae8a35842709c87b69808e92abfe9a83b734bdb92e32f1",

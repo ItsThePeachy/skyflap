@@ -1,1 +1,1 @@
-{"version": "1.6.0", "notes": "Each bird now has its own species calls: one for a new highscore, one every 10 points and one when it crashes (3 variations each). Falling into the water is now a single deep, heavy 'rock into water' splash. Tap a bird in the skin selector to hear it."}
+{"version": "1.6.1", "notes": "Each bird has its own species calls for a new highscore, every 10 points and a crash. Water splash is now always the deep, heavy splash."}
