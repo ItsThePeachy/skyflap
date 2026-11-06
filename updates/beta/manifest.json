@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.6.8",
-  "notes": "Windows app updates rebuilt: app updates now download into your user folder and the app restarts itself (no helper script, nothing replaced in the install folder). Shows an error and Retry button if an update fails.",
+  "version": "1.6.9",
+  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "4ed4fcff62b57c18b81fa188ccba34cb92e0d0dfaf4ffcc6fb7cbda7b9e6926e",
-    "size": 179916
+    "sha256": "64bbc016fdf27776d8baaa0acf3fa9ba952d41d71a14bf2031f9f881e56c6c41",
+    "size": 180655
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Windows app updates rebuilt: app updates now download into your user folder and the app restarts itself (no helper script, nothing replaced in the install folder). Shows an error and Retry button if an update fails.",
+  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Windows app updates rebuilt: app updates now download into your user folder and the app restarts itself (no helper script, nothing replaced in the install folder). Shows an error and Retry button if an update fails.",
+  "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

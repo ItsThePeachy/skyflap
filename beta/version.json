@@ -1,1 +1,1 @@
-{"version": "1.6.8", "notes": "Windows app updates rebuilt: app updates now download into your user folder and the app restarts itself (no helper script, nothing replaced in the install folder). Shows an error and Retry button if an update fails."}
+{"version": "1.6.9", "notes": "Bloom no longer makes the pipes flicker: the glow is now built from properly averaged downscaling instead of a single big shrink that sampled thin highlights unevenly."}
