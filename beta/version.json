@@ -1,1 +1,1 @@
-{"version": "1.9.7", "notes": "Bloom work is now split into three light steps on separate frames and refreshed 10x per second, removing the every-third-frame spike."}
+{"version": "1.9.8", "notes": "Film grain and the daytime vignette are pre-rendered into one full-screen image (one pass instead of two, identical look)."}
