@@ -1,1 +1,1 @@
-{"version": "1.9.5", "notes": "Film grain is now a static pre-rendered texture drawn with a normal blend (the old per-frame overlay blend ran in a slow fallback on many phone GPUs)."}
+{"version": "1.9.6", "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look)."}

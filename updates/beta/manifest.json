@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.9.5",
-  "notes": "Film grain is now a static pre-rendered texture drawn with a normal blend (the old per-frame overlay blend ran in a slow fallback on many phone GPUs).",
+  "version": "1.9.6",
+  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "d23081691b663dcf52741f6c9f62adf316e0a8a7f8465ed0bde3c798629288ae",
-    "size": 209162
+    "sha256": "b2a736a91d5852c0d00cdd180cdf1022e18b8e2db7ae119293c7d9ea15183796",
+    "size": 208998
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Film grain is now a static pre-rendered texture drawn with a normal blend (the old per-frame overlay blend ran in a slow fallback on many phone GPUs).",
+  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Film grain is now a static pre-rendered texture drawn with a normal blend (the old per-frame overlay blend ran in a slow fallback on many phone GPUs).",
+  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.5';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.6';</script>
 <script>
 (() => {
 'use strict';
@@ -1239,7 +1239,7 @@ function bEdge(c,x){if(c.width>c.lw){x.globalCompositeOperation='copy';x.drawIma
 // the glare input is the static scene (sky, clouds, land, light shafts): draw it straight into the 1/2-res buffer instead of
 // reading the whole full-res canvas back (saves a full-screen read every frame; the result is blurred to 1/8 res anyway)
 function bloomScene(x,c){const k=S*c.lw/cv.width;x.clearRect(0,0,c.width,c.height);x.globalCompositeOperation='source-over';x.setTransform(k,0,0,k,0,0);
-  x.drawImage(skyC,-2,-2,W+4,GY+16);drawClouds(x,false);drawLayer(x,LAYERS[0],BP);drawClouds(x,true);for(let i=1;i<4;i++)drawLayer(x,LAYERS[i],BP);
+  x.drawImage(skyC,-2,-2,W+4,GY+16);drawClouds(x,false);drawClouds(x,true);
   if(volOut){x.globalCompositeOperation='lighter';x.globalAlpha=volA;x.drawImage(volOut,0,0,W,GY+10);x.globalAlpha=1;x.globalCompositeOperation='source-over';}
   x.setTransform(1,0,0,1,0,0);}
 let BP=null;
@@ -1249,16 +1249,16 @@ function bloomPass(){
   // samples a few pixels per block, so thin pipe highlights popped in and out of the glow as pipes moved (flicker)
   let src=null;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';
     if(i===0)bloomScene(x,c);else x.drawImage(src,0,0,src.lw||src.width,src.lh||src.height,0,0,c.lw,c.lh);
-    if(i===0){ // pipes block the glare as plain silhouettes: solid shapes have exact edge coverage, so they stay steady while moving
-      const k=S*c.lw/cv.width;x.setTransform(k,0,0,k,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#000';x.beginPath();
-      for(const p of pipes){const top=p.gy-p.gap/2,bot=p.gy+p.gap/2;x.rect(p.x,-40,PW,top+40);x.rect(p.x-7,top-30,PW+14,30);x.rect(p.x,bot,PW,GY+20-bot);x.rect(p.x-7,bot,PW+14,30);}
-      x.fill();x.setTransform(1,0,0,1,0,0);}
     if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';bEdge(c,x);src=c;});
   bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bQ.lw,bQ.lh);bEdge(bQ,bQc);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bQ.lw,bQ.lh,0,0,bB.lw,bB.lh);bEdge(bB,bBc);
   // pre-combine both glare layers at 1/8 res so the screen gets ONE full-screen additive draw instead of two
   const x=bCc;x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='copy';x.globalAlpha=.2;x.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bC.lw,bC.lh);
   x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,bC.lw,bC.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(bC,x);
 }
+// Pre-rendered bloom: the glare comes from the sky (sun, bright sky, clouds, light shafts), so it is computed only when the
+// sky cache is refreshed and baked into it. Normal frames do no bloom work at all; pipes and land occlude it naturally.
+function skyBloom(){bloomPass();const x=skyX;x.save();x.setTransform(S*Q.sky,0,0,S*Q.sky,0,0);x.globalCompositeOperation='lighter';
+  x.drawImage(bC,0,0,bC.lw,bC.lh,0,0,W,H);x.restore();}
 function bloomDraw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='lighter';ctx.imageSmoothingEnabled=true;
   ctx.drawImage(bC,0,0,bC.lw,bC.lh,0,0,cv.width,cv.height);
@@ -1340,7 +1340,7 @@ function drawDead(){
 let frame=0;
 function render(){
   frame++;const P=palette(phase),sun=sunInfo();if(SRC.length<SRCN||SRC.includes(undefined))prebuildSrc();
-  if(++skyAge>=Q.skyEvery){renderSky(P,sun);skyAge=0;}
+  if(++skyAge>=Q.skyEvery){renderSky(P,sun);if(bA)skyBloom();skyAge=0;}
   const c=ctx,shk=set.shake?shake:0,shx=(Math.random()-.5)*shk,shy=(Math.random()-.5)*shk;
   c.setTransform(S,0,0,S,shx*S,shy*S);c.globalCompositeOperation='source-over';c.globalAlpha=1;
   c.drawImage(skyC,-2,-2,W+4,GY+16);
@@ -1351,7 +1351,7 @@ function render(){
   drawLayer(c,LAYERS[2],P);
   drawLayer(c,LAYERS[3],P);
   volLight(c,P,sun);   // light shafts live in the air behind the pipes/bird: they no longer streak across the pipes
-  if(bA){BP=P;bloomPass();}   // glare is computed from the static scene (sky, sun, land, shafts) before pipes/bird: nothing moving can make it flicker
+  // glare is computed from the static scene (sky, sun, land, shafts) before pipes/bird: nothing moving can make it flicker
   drawMotes(c,P,sun);
   for(const p of pipes)drawPipe(c,p);
   drawParts(c);
@@ -1362,7 +1362,6 @@ function render(){
   if(graded&&!Q.vignette){c.globalCompositeOperation='multiply';c.fillStyle=P.gr;c.fillRect(0,0,W,H);c.globalCompositeOperation='source-over';}
   for(const p of pops){const k=p.life/1.4,s=1+Math.sin(Math.min(1,k*4)*Math.PI)*.3;c.globalAlpha=1-k*k;c.save();c.translate(p.x,p.y-k*20);c.scale(s,s);txt(p.s,0,0,44,{shadow:'rgba(255,170,80,.9)'});c.restore();}
   c.globalAlpha=1;
-  if(bA)bloomDraw();
   if(Q.flare)lensFlare(sun);
   if(Q.vignette){
     if(graded){if(gvKey!==P.gr){gvKey=P.gr;gvX.setTransform(1,0,0,1,0,0);gvX.fillStyle=P.gr;gvX.fillRect(0,0,gvC.width,gvC.height);gvX.drawImage(vigC,0,0,gvC.width,gvC.height);}
