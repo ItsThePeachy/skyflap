@@ -1,1 +1,1 @@
-{"version": "1.9.0", "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free."}
+{"version": "1.9.1", "notes": "Removed the Auto graphics preset (anyone on Auto keeps the level it started them on). Includes feathers and the bird shop."}

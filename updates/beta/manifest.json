@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.9.0",
-  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
+  "version": "1.9.1",
+  "notes": "Removed the Auto graphics preset (anyone on Auto keeps the level it started them on). Includes feathers and the bird shop.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "56d525185050f5032dbf882ff3550c463b17cccf5846eda140627870cbfb3651",
-    "size": 203683
+    "sha256": "b6c3253aec291af621efe50defc4efb257f05e2d86b356f0dcfbbbb0b8804458",
+    "size": 203323
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
+  "notes": "Removed the Auto graphics preset (anyone on Auto keeps the level it started them on). Includes feathers and the bird shop.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Feathers: earn 1 feather per 10 pipes (leftover pipes carry over) and buy birds in the skin selector - common birds 5, featured birds 10. The Robin and your currently equipped bird are yours for free.",
+  "notes": "Removed the Auto graphics preset (anyone on Auto keeps the level it started them on). Includes feathers and the bird shop.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

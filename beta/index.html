@@ -93,7 +93,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.0';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.1';</script>
 <script>
 (() => {
 'use strict';
@@ -127,10 +127,11 @@ const PRESETS={
 const LADDER=['ultra','high','med','low'],GFX=['res','vol','rays','bloom','flare','refl','clouds','motes','vignette','grain','glass'];
 const TOD={day:0,sunset:.9,night:2,dawn:3.1};
 let autoLvl=coarse?2:1,dprScale=1,Q={};
-let set=Object.assign({channel:'stable',betaUnlocked:0,autoupd:1,pcres:'native',skin:'robin',preset:'auto',tod:'cycle',shake:1,fps:0,amb:'2',sfxv:'3',amb:'2',sfxv:'3',cap:coarse?'60':'max'},PRESETS[LADDER[autoLvl]]);
+let set=Object.assign({channel:'stable',betaUnlocked:0,autoupd:1,pcres:'native',skin:'robin',preset:LADDER[autoLvl],tod:'cycle',shake:1,fps:0,amb:'2',sfxv:'3',amb:'2',sfxv:'3',cap:coarse?'60':'max'},PRESETS[LADDER[autoLvl]]);
 try{Object.assign(set,JSON.parse(localStorage.getItem('skyflap_settings')||'{}'));}catch(e){}
 const applyPreset=n=>{if(PRESETS[n])Object.assign(set,PRESETS[n]);};
-if(set.preset==='auto')applyPreset(LADDER[autoLvl]);else applyPreset(set.preset);
+if(set.preset==='auto'){set.preset=LADDER[autoLvl];setTimeout(()=>saveSet(),0);}   // Auto preset removed: keep the level it started people on
+applyPreset(set.preset);
 function saveSet(){try{localStorage.setItem('skyflap_settings',JSON.stringify(set));}catch(e){}}
 function computeQ(){const base=set.res==='native'?3:+set.res,l=+set.refl;
   Q={dpr:base,bloom:+set.bloom,grain:+set.grain,rays:set.rays?(base>=2?16:10):0,flare:+set.flare,blur:+set.glass,vol:+set.vol,
@@ -1366,7 +1367,7 @@ function render(){
 // ---------- settings menu ----------
 const UI=[
  {sec:'Quality'},
- {k:'preset',label:'Graphics preset',desc:'Auto lowers quality by itself if your device struggles',type:'seg',opts:[['auto','Auto'],['low','Low'],['med','Med'],['high','High'],['ultra','Ultra']]},
+ {k:'preset',label:'Graphics preset',desc:'Pick a quality level, or change any setting below for Custom',type:'seg',opts:[['low','Low'],['med','Med'],['high','High'],['ultra','Ultra']]},
  {sec:'PC display',show:()=>!!dsk},
  {k:'dmode',label:'Display mode',desc:'Borderless fills the screen like a window (instant alt-tab); Fullscreen hides the taskbar. F11 or Alt+Enter toggles.',type:'seg',show:()=>!!dsk,opts:[['windowed','Windowed'],['borderless','Borderless'],['fullscreen','Fullscreen']]},
  {k:'dwin',label:'Window size',type:'seg',show:()=>dsk&&dsk.mode==='windowed',opts:()=>{const o=dsk.sizes.map(([w,h])=>[w+'x'+h,w+'\u00d7'+h]),cur=dsk.w+'x'+dsk.h;if(!o.some(x=>x[0]===cur))o.push([cur,'Custom']);return o;}},
@@ -1430,7 +1431,7 @@ function changeSetting(k,v){
   if(k==='pcres'){set.pcres=v;dprScale=1;saveSet();resize();skyAge=99;buildSettings();return;}
   if(k==='sound'){muted=!muted;try{localStorage.setItem('skyflap_muted',muted?'1':'0');}catch(e){}applyVolumes();buildSettings();return;}
   if(k==='amb'||k==='sfxv'){set[k]=v;saveSet();applyVolumes();buildSettings();return;}
-  if(k==='preset'){set.preset=v;dprScale=1;if(v==='auto'){autoLvl=coarse?2:1;applyPreset(LADDER[autoLvl]);}else applyPreset(v);perfN=-60;perfAcc=0;}
+  if(k==='preset'){set.preset=v;dprScale=1;applyPreset(v);}
   else{set[k]=typeof set[k]==='number'?(+v):v;if(GFX.includes(k)){set.preset='custom';dprScale=1;}}
   if(k==='tod'&&v!=='cycle')phase=TOD[v];
   saveSet();resize();skyAge=99;buildSettings();
@@ -1443,7 +1444,7 @@ setB.addEventListener('click',e=>{
 function openSettings(){ensureAudio();if(state==='play')paused=true;setOpen=true;buildSettings();setEl.classList.add('open');}
 function closeSettings(){setOpen=false;setEl.classList.remove('open');}
 document.getElementById('setX').addEventListener('click',closeSettings);
-document.getElementById('setR').addEventListener('click',()=>{set=Object.assign({channel:set.channel,betaUnlocked:set.betaUnlocked,autoupd:1,pcres:'native',skin:set.skin,preset:'auto',tod:'cycle',shake:1,fps:0,cap:coarse?'60':'max'},PRESETS[LADDER[coarse?2:1]]);autoLvl=coarse?2:1;dprScale=1;muted=false;applyVolumes();saveSet();resize();skyAge=99;buildSettings();});
+document.getElementById('setR').addEventListener('click',()=>{set=Object.assign({channel:set.channel,betaUnlocked:set.betaUnlocked,autoupd:1,pcres:'native',skin:set.skin,preset:LADDER[coarse?2:1],tod:'cycle',shake:1,fps:0,cap:coarse?'60':'max'},PRESETS[LADDER[coarse?2:1]]);autoLvl=coarse?2:1;dprScale=1;muted=false;applyVolumes();saveSet();resize();skyAge=99;buildSettings();});
 setEl.addEventListener('pointerdown',e=>{if(e.target===setEl)closeSettings();e.stopPropagation();});
 
 
@@ -1554,10 +1555,6 @@ function loop(now){
   if(ac&&(frame&7)===0)ambUpdate();
   if(host&&(frame&15)===0)updRender();
   fpsN++;fpsT+=raw;if(fpsT>=.5){fpsVal=Math.round(fpsN/fpsT);fpsTxt=fpsVal+' FPS';fpsN=0;fpsT=0;if(setOpen)updateStatus();}
-  if(set.preset==='auto'&&!setOpen&&raw>0&&raw<.25&&!document.hidden){perfN++;if(perfN>0){perfAcc+=raw;
-    if(perfN>=45){const avg=perfAcc/perfN;
-      if(avg>(cap?1.25/cap:1/52)){if(autoLvl<3){autoLvl++;applyPreset(LADDER[autoLvl]);}else if(dprScale>.6)dprScale=Math.max(.6,dprScale-.15);else perfN=-1e9;saveSet();resize();}
-      perfAcc=0;if(perfN>0)perfN=-30;}}}
 }
 requestAnimationFrame(loop);
 })();
