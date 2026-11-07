@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.9.6",
-  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
+  "version": "1.9.7",
+  "notes": "Bloom work is now split into three light steps on separate frames and refreshed 10x per second, removing the every-third-frame spike.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "b2a736a91d5852c0d00cdd180cdf1022e18b8e2db7ae119293c7d9ea15183796",
-    "size": 208998
+    "sha256": "b8413434e583e5f49bffb55dbf5de261dacdf360797d457938f9b9155ffd284a",
+    "size": 209226
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.1",
   "versionCode": 7,
-  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
+  "notes": "Bloom work is now split into three light steps on separate frames and refreshed 10x per second, removing the every-third-frame spike.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
   "size": 1394031
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look).",
+  "notes": "Bloom work is now split into three light steps on separate frames and refreshed 10x per second, removing the every-third-frame spike.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

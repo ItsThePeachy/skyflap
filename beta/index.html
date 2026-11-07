@@ -93,7 +93,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.6';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.7';</script>
 <script>
 (() => {
 'use strict';
@@ -792,7 +792,7 @@ const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','blackbird','greattit
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
-const SRCN=32;let SRC=[];let BLOOM_PL=2;let bC,bCc,bChain=[],bQ,bQc,bP,bPc,bPok=false;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
+const SRCN=32;let SRC=[];let BLOOM_PL=2;let bStage=-1,bNext=0,bC,bC2,bReady=null,bChain=[],bQ,bQc,bP,bPc,bPok=false;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
   for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
@@ -838,7 +838,7 @@ function resize(){
   if(Q.bloom){ // downsample chain: every step halves exactly, so each step is a true 2x2 average (no sub-pixel shimmer)
     const mkB=(w,h)=>{const c=document.createElement('canvas');c.lw=Math.max(2,w);c.lh=Math.max(2,h);c.width=Math.max(160,c.lw);c.height=Math.max(160,c.lh);return c;};
     bChain=[mkB(cv.width>>1,cv.height>>1)];for(let i=0;i<2;i++){const p=bChain[i];bChain.push(mkB(p.lw>>1,p.lh>>1));}
-    bA=bChain[2];const q=mkB(bA.lw>>1,bA.lh>>1);bB=mkB(q.lw>>1,q.lh>>1);bQ=q;bC=mkB(bA.lw,bA.lh);bCc=bC.getContext('2d');
+    bA=bChain[2];const q=mkB(bA.lw>>1,bA.lh>>1);bB=mkB(q.lw>>1,q.lh>>1);bQ=q;bC=mkB(bA.lw,bA.lh);bC2=mkB(bA.lw,bA.lh);bReady=null;bStage=-1;
     bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
@@ -1253,22 +1253,22 @@ function bloomScene(x,c){const k=S*c.lw/cv.width;x.clearRect(0,0,c.width,c.heigh
   if(volOut){x.globalCompositeOperation='lighter';x.globalAlpha=volA;x.drawImage(volOut,0,0,W,GY+10);x.globalAlpha=1;x.globalCompositeOperation='source-over';}
   x.setTransform(1,0,0,1,0,0);}
 let BP=null;
-function bloomPass(){
-  // bright-pass without CSS filters: x^8 via self-multiply keeps only near-white pixels (fast on mobile GPUs)
-  // downsample in exact halving steps (true 2x2 averages), then the x^8 bright-pass at 1/8 res: a one-step 8x shrink only
-  // samples a few pixels per block, so thin pipe highlights popped in and out of the glow as pipes moved (flicker)
-  let src=null;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';
-    if(i===0)bloomScene(x,c);else x.drawImage(src,0,0,src.lw||src.width,src.lh||src.height,0,0,c.lw,c.lh);
-    if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';bEdge(c,x);src=c;});
-  bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bQ.lw,bQ.lh);bEdge(bQ,bQc);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bQ.lw,bQ.lh,0,0,bB.lw,bB.lh);bEdge(bB,bBc);
-  // pre-combine both glare layers at 1/8 res so the screen gets ONE full-screen additive draw instead of two
-  const x=bCc;x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='copy';x.globalAlpha=.2;x.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bC.lw,bC.lh);
-  x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,bC.lw,bC.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(bC,x);
+// Bloom runs as a small background job: three light stages on separate frames, restarting every 9 frames (10x/s at 90 fps).
+// The finished glow (bReady) is baked into the sky cache whenever the sky refreshes, so no frame carries the whole cost.
+function bloomStage(st){
+  if(st===0){const c=bChain[0],x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;bloomScene(x,c);x.globalCompositeOperation='source-over';bEdge(c,x);}
+  else if(st===1){for(let i=1;i<bChain.length;i++){const c=bChain[i],src=bChain[i-1],x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;
+      x.globalCompositeOperation='copy';x.drawImage(src,0,0,src.lw,src.lh,0,0,c.lw,c.lh);
+      if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';bEdge(c,x);}}
+  else{bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bQ.lw,bQ.lh);bEdge(bQ,bQc);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bQ.lw,bQ.lh,0,0,bB.lw,bB.lh);bEdge(bB,bBc);
+    const T=bReady===bC?bC2:bC,x=T.getContext('2d');x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='copy';x.globalAlpha=.2;x.drawImage(bA,0,0,bA.lw,bA.lh,0,0,T.lw,T.lh);
+    x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,T.lw,T.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(T,x);bReady=T;}
 }
-// Pre-rendered bloom: the glare comes from the sky (sun, bright sky, clouds, light shafts), so it is computed only when the
-// sky cache is refreshed and baked into it. Normal frames do no bloom work at all; pipes and land occlude it naturally.
-function skyBloom(){bloomPass();const x=skyX;x.save();x.setTransform(S*Q.sky,0,0,S*Q.sky,0,0);x.globalCompositeOperation='lighter';
-  x.drawImage(bC,0,0,bC.lw,bC.lh,0,0,W,H);x.restore();}
+// stage 0 must read the freshly rendered sky (before glow is baked into it), so it starts right after a sky refresh
+function bloomOnSky(){if(!bA)return;if(!bReady){bloomStage(0);bloomStage(1);bloomStage(2);bNext=frame+9;}else if(bStage<0&&frame>=bNext){bloomStage(0);bStage=1;bNext=frame+9;}skyBloom();}
+function bloomTick(){if(bA&&bStage>0){bloomStage(bStage);bStage=bStage===1?2:-1;}}
+function skyBloom(){if(!bReady)return;const x=skyX;x.save();x.setTransform(S*Q.sky,0,0,S*Q.sky,0,0);x.globalCompositeOperation='lighter';
+  x.drawImage(bReady,0,0,bReady.lw,bReady.lh,0,0,W,H);x.restore();}
 function bloomDraw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='lighter';ctx.imageSmoothingEnabled=true;
   ctx.drawImage(bC,0,0,bC.lw,bC.lh,0,0,cv.width,cv.height);
@@ -1350,7 +1350,7 @@ function drawDead(){
 let frame=0;
 function render(){
   frame++;const P=palette(phase),sun=sunInfo();if(SRC.length<SRCN||SRC.includes(undefined))prebuildSrc();
-  if(++skyAge>=Q.skyEvery){renderSky(P,sun);if(bA)skyBloom();skyAge=0;}
+  if(++skyAge>=Q.skyEvery){renderSky(P,sun);bloomOnSky();skyAge=0;}else bloomTick();
   const c=ctx,shk=set.shake?shake:0,shx=(Math.random()-.5)*shk,shy=(Math.random()-.5)*shk;
   c.setTransform(S,0,0,S,shx*S,shy*S);c.globalCompositeOperation='source-over';c.globalAlpha=1;
   c.drawImage(skyC,-2,-2,W+4,GY+16);

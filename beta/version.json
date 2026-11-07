@@ -1,1 +1,1 @@
-{"version": "1.9.6", "notes": "Bloom is now pre-rendered: the glow is computed only when the sky refreshes and baked into it, so normal frames do no bloom work (same look)."}
+{"version": "1.9.7", "notes": "Bloom work is now split into three light steps on separate frames and refreshed 10x per second, removing the every-third-frame spike."}
