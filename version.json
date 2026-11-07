@@ -1,1 +1,1 @@
-{"version": "1.8.1", "notes": "Removed the Auto graphics preset: it could lower your graphics by itself. Anyone on Auto keeps the level it started them on; pick Low, Med, High or Ultra in Settings."}
+{"version": "1.9.8", "notes": "Feathers & bird shop: earn 1 feather per 10 pipes and buy birds (common 5, featured 10). Render resolution now relative to your screen (0.5x-2x). Big performance boost: pre-rendered bloom and film grain, faster effects. Android app asks for your screen's highest refresh rate."}

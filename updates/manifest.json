@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "1.8.1",
-  "notes": "Removed the Auto graphics preset: it could lower your graphics by itself. Anyone on Auto keeps the level it started them on; pick Low, Med, High or Ultra in Settings.",
+  "version": "1.9.8",
+  "notes": "Feathers & bird shop: earn 1 feather per 10 pipes and buy birds (common 5, featured 10). Render resolution now relative to your screen (0.5x-2x). Big performance boost: pre-rendered bloom and film grain, faster effects. Android app asks for your screen's highest refresh rate.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "f8dfeb97ce4fa822edb4e0e903e909d1579459d5d6ebd43eaa0c6d3a5d6c6eef",
-    "size": 198943
+    "sha256": "efe9f5de65c9f5af53a1bed402f2f59eb5625effecf613d3a3ddc73f0d7cb776",
+    "size": 210171
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -20,16 +20,16 @@
   }
  },
  "android": {
-  "version": "1.5.1",
-  "versionCode": 7,
-  "notes": "Removed the Auto graphics preset: it could lower your graphics by itself. Anyone on Auto keeps the level it started them on; pick Low, Med, High or Ultra in Settings.",
+  "version": "1.5.2",
+  "versionCode": 8,
+  "notes": "Feathers & bird shop: earn 1 feather per 10 pipes and buy birds (common 5, featured 10). Render resolution now relative to your screen (0.5x-2x). Big performance boost: pre-rendered bloom and film grain, faster effects. Android app asks for your screen's highest refresh rate.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/android/Skyflap.apk",
-  "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
-  "size": 1394031
+  "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
+  "size": 2626988
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Removed the Auto graphics preset: it could lower your graphics by itself. Anyone on Auto keeps the level it started them on; pick Low, Med, High or Ultra in Settings.",
+  "notes": "Feathers & bird shop: earn 1 feather per 10 pipes and buy birds (common 5, featured 10). Render resolution now relative to your screen (0.5x-2x). Big performance boost: pre-rendered bloom and film grain, faster effects. Android app asks for your screen's highest refresh rate.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",
