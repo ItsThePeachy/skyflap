@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.2';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.3';</script>
 <script>
 (() => {
 'use strict';
@@ -802,6 +802,9 @@ function buildBirdSprites(){
 }
 const saProbe=document.createElement('div');saProbe.style.cssText='position:fixed;left:0;top:env(safe-area-inset-top,0px);height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden;pointer-events:none';document.body.appendChild(saProbe);
 let SAT=0,SAB=0;
+// Canvases redrawn every frame must stay GPU-backed: browsers put small canvases (< ~16k px) on the CPU, and drawing
+// between GPU and CPU canvases every frame stalls the GPU. gpuScale() enlarges a buffer just enough to stay on the GPU.
+const GPU_MIN=26000,gpuScale=(w,h)=>w*h>=GPU_MIN?1:Math.sqrt(GPU_MIN/(w*h));
 function resize(){
   computeQ();
   DPR=(window.skyflapDesktop&&set.pcres&&set.pcres!=='native')?clamp(+set.pcres/Math.max(1,innerHeight),.25,4)*dprScale:Q.dpr*dprScale;
@@ -810,16 +813,16 @@ function resize(){
   {const r=saProbe.getBoundingClientRect();SAT=r.top*DPR/S;SAB=r.height*DPR/S;}
   skyC=document.createElement('canvas');skyC.width=Math.ceil(W*S*Q.sky);skyC.height=Math.ceil((GY+12)*S*Q.sky);skyX=skyC.getContext('2d',{alpha:false});skyAge=99;
   srcSpr=null;
-  SRC=[];srcSpr=null;if(Q.vol){const vs=.14;vA=document.createElement('canvas');vB=document.createElement('canvas');vA.width=vB.width=Math.ceil(W*S*vs);vA.height=vB.height=Math.ceil((GY+10)*S*vs);vAx=vA.getContext('2d');vBx=vB.getContext('2d');}else vA=null;
-  if(Q.refl){reflC=document.createElement('canvas');reflC.width=Math.ceil(cv.width*Q.refl);reflC.height=Math.ceil(GH*S*Q.refl);reflX=reflC.getContext('2d',{alpha:false});}else reflC=null;
-  gvC=document.createElement('canvas');gvC.width=Math.ceil(W*S*.15);gvC.height=Math.ceil(H*S*.15);gvX=gvC.getContext('2d',{alpha:false});gvKey='';
+  SRC=[];srcSpr=null;if(Q.vol){let vs=.14;vs*=gpuScale(W*S*vs,(GY+10)*S*vs);vA=document.createElement('canvas');vB=document.createElement('canvas');vA.width=vB.width=Math.ceil(W*S*vs);vA.height=vB.height=Math.ceil((GY+10)*S*vs);vAx=vA.getContext('2d');vBx=vB.getContext('2d');}else vA=null;
+  if(Q.refl){const rk=Q.refl*gpuScale(cv.width*Q.refl,GH*S*Q.refl);reflC=document.createElement('canvas');reflC.width=Math.ceil(cv.width*rk);reflC.height=Math.ceil(GH*S*rk);reflX=reflC.getContext('2d',{alpha:false});}else reflC=null;
+  {const gk=.15*gpuScale(W*S*.15,H*S*.15);gvC=document.createElement('canvas');gvC.width=Math.ceil(W*S*gk);gvC.height=Math.ceil(H*S*gk);}gvX=gvC.getContext('2d',{alpha:false});gvKey='';
   vigC=mk(W,H,.15*S,g=>{const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.45,Math.max(W,H)*.78);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,12,.42)');g.fillStyle=vg;g.fillRect(0,0,W,H);});
   if(Q.blur&&FILTER){snap=document.createElement('canvas');snap.width=cv.width;snap.height=cv.height;snapc=snap.getContext('2d');}else snap=null;
   if(Q.bloom){ // downsample chain: every step halves exactly, so each step is a true 2x2 average (no sub-pixel shimmer)
-    const mkB=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(2,w);c.height=Math.max(2,h);return c;};
-    bChain=[mkB(cv.width>>1,cv.height>>1)];for(let i=0;i<2;i++){const p=bChain[i];bChain.push(mkB(p.width>>1,p.height>>1));}
-    bA=bChain[2];const q=mkB(bA.width>>1,bA.height>>1);bB=mkB(q.width>>1,q.height>>1);bQ=q;
-    bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bP=mkB(bA.width,bA.height);bPc=bP.getContext('2d');bPok=false;bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
+    const mkB=(w,h)=>{const c=document.createElement('canvas');c.lw=Math.max(2,w);c.lh=Math.max(2,h);c.width=Math.max(160,c.lw);c.height=Math.max(160,c.lh);return c;};
+    bChain=[mkB(cv.width>>1,cv.height>>1)];for(let i=0;i<2;i++){const p=bChain[i];bChain.push(mkB(p.lw>>1,p.lh>>1));}
+    bA=bChain[2];const q=mkB(bA.lw>>1,bA.lh>>1);bB=mkB(q.lw>>1,q.lh>>1);bQ=q;
+    bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
   tcache.clear();buildPipeTex();buildBirdSprites();
@@ -1221,21 +1224,25 @@ function drawWater(P,sun){
   if(drops.length){c.fillStyle='rgba(225,240,255,.9)';c.beginPath();for(const d of drops){c.moveTo(d.x+d.s,d.y);c.arc(d.x,d.y,d.s,0,7);}c.fill();}
   const mist=c.createLinearGradient(0,GY-50,0,GY+40),ma=.1+P.star*.12;mist.addColorStop(0,rgba(P.b,0));mist.addColorStop(.55,rgba(P.b,ma));mist.addColorStop(1,rgba(P.b,0));c.fillStyle=mist;c.fillRect(0,GY-50,W,90);
 }
+// buffers draw into their top-left lw x lh: copy the last column/row into the padding so bilinear sampling at the edge
+// reads the edge colour instead of stale/empty padding pixels
+function bEdge(c,x){if(c.width>c.lw){x.globalCompositeOperation='copy';x.drawImage(c,c.lw-1,0,1,c.lh,c.lw,0,1,c.lh);}
+  if(c.height>c.lh){x.globalCompositeOperation='copy';x.drawImage(c,0,c.lh-1,c.lw+1,1,0,c.lh,c.lw+1,1);}x.globalCompositeOperation='source-over';}
 function bloomPass(){
   // bright-pass without CSS filters: x^8 via self-multiply keeps only near-white pixels (fast on mobile GPUs)
   // downsample in exact halving steps (true 2x2 averages), then the x^8 bright-pass at 1/8 res: a one-step 8x shrink only
   // samples a few pixels per block, so thin pipe highlights popped in and out of the glow as pipes moved (flicker)
-  let src=cv;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';x.drawImage(src,0,0,c.width,c.height);
+  let src=cv;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';x.drawImage(src,0,0,src.lw||src.width,src.lh||src.height,0,0,c.lw,c.lh);
     if(i===0){ // pipes block the glare as plain silhouettes: solid shapes have exact edge coverage, so they stay steady while moving
-      const k=S*c.width/cv.width;x.setTransform(k,0,0,k,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#000';x.beginPath();
+      const k=S*c.lw/cv.width;x.setTransform(k,0,0,k,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#000';x.beginPath();
       for(const p of pipes){const top=p.gy-p.gap/2,bot=p.gy+p.gap/2;x.rect(p.x,-40,PW,top+40);x.rect(p.x-7,top-30,PW+14,30);x.rect(p.x,bot,PW,GY+20-bot);x.rect(p.x-7,bot,PW+14,30);}
       x.fill();x.setTransform(1,0,0,1,0,0);}
-    if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';src=c;});
-  bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bQ.width,bQ.height);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bB.width,bB.height);bBc.globalCompositeOperation='source-over';
+    if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';bEdge(c,x);src=c;});
+  bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bQ.lw,bQ.lh);bEdge(bQ,bQc);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bQ.lw,bQ.lh,0,0,bB.lw,bB.lh);bEdge(bB,bBc);
 }
 function bloomDraw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='lighter';ctx.imageSmoothingEnabled=true;
-  ctx.globalAlpha=.2;ctx.drawImage(bA,0,0,cv.width,cv.height);ctx.globalAlpha=.345;ctx.drawImage(bB,0,0,cv.width,cv.height);
+  ctx.globalAlpha=.2;ctx.drawImage(bA,0,0,bA.lw,bA.lh,0,0,cv.width,cv.height);ctx.globalAlpha=.345;ctx.drawImage(bB,0,0,bB.lw,bB.lh,0,0,cv.width,cv.height);
   ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.setTransform(S,0,0,S,0,0);
 }
 function lensFlare(sun){

@@ -1,1 +1,1 @@
-{"version": "1.9.2", "notes": "Render resolution is now relative to your screen: 0.5x, 0.75x, Native, 1.5x, 2x (above Native = supersampling). Old settings convert to the closest option."}
+{"version": "1.9.3", "notes": "Performance: effect buffers (light shafts, reflections, colour grade, bloom) now always stay on the GPU. Fixes 0.5x running worse than Native, and speeds up small windows on PC."}
