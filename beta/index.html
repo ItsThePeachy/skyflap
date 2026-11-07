@@ -93,7 +93,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.3';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.4';</script>
 <script>
 (() => {
 'use strict';
@@ -785,7 +785,7 @@ const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','blackbird','greattit
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
-const SRCN=32;let SRC=[];let BLOOM_PL=2;let bChain=[],bQ,bQc,bP,bPc,bPok=false;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
+const SRCN=32;let SRC=[];let BLOOM_PL=2;let bC,bCc,bChain=[],bQ,bQc,bP,bPc,bPok=false;let srcSpr=null,srcKey='',volOut=null,volA=0,gvC,gvX,gvKey='',layerGen=0,waterC,waterX,vA,vB,vAx,vBx,skyC,skyX,reflC,reflX,vigC,snap,snapc,bA,bB,bAc,bBc,pipeTex,birdSpr,skyAge=99;
 const tcache=new Map();
 function pipeGrad(c,x0,x1){const g=c.createLinearGradient(x0,0,x1,0);
   for(const [o,col] of [[0,'#05150d'],[.06,'#123826'],[.18,'#357f56'],[.26,'#9fe0b8'],[.3,'#f0fff6'],[.34,'#79c99c'],[.52,'#2c744c'],[.78,'#143d29'],[.9,'#2b6848'],[.96,'#3f8a62'],[1,'#04120a']])g.addColorStop(o,col);return g;}
@@ -831,7 +831,7 @@ function resize(){
   if(Q.bloom){ // downsample chain: every step halves exactly, so each step is a true 2x2 average (no sub-pixel shimmer)
     const mkB=(w,h)=>{const c=document.createElement('canvas');c.lw=Math.max(2,w);c.lh=Math.max(2,h);c.width=Math.max(160,c.lw);c.height=Math.max(160,c.lh);return c;};
     bChain=[mkB(cv.width>>1,cv.height>>1)];for(let i=0;i<2;i++){const p=bChain[i];bChain.push(mkB(p.lw>>1,p.lh>>1));}
-    bA=bChain[2];const q=mkB(bA.lw>>1,bA.lh>>1);bB=mkB(q.lw>>1,q.lh>>1);bQ=q;
+    bA=bChain[2];const q=mkB(bA.lw>>1,bA.lh>>1);bB=mkB(q.lw>>1,q.lh>>1);bQ=q;bC=mkB(bA.lw,bA.lh);bCc=bC.getContext('2d');
     bChain.forEach(c=>c.cx=c.getContext('2d'));bQc=q.getContext('2d');bAc=bA.getContext('2d');bBc=bB.getContext('2d');}else bA=null;
   layerGen++;
   if(reflC){waterC=document.createElement('canvas');waterC.width=reflC.width;waterC.height=reflC.height;waterX=waterC.getContext('2d',{alpha:false});}
@@ -1002,6 +1002,7 @@ function update(dt){
     const target=bird.vy<0?-.38:clamp((bird.vy-120)/520,-.38,1.35);bird.rot=lerp(bird.rot,target,1-Math.pow(.0005,dt));
     bird.wing+=dt*(bird.vy<0?32:bird.vy>380?4:12);
     if(bird.y<12){bird.y=12;bird.vy=Math.max(bird.vy,0);}
+    if(bench){const n=pipes.find(p=>p.x+PW>bird.x-12)||pipes[0],ty=n?n.gy+18:H*.45;if(bird.y>ty&&bird.vy>-60)flap();}
     for(const p of pipes)p.x-=speed*dt;
     if(pipes.length&&pipes[0].x<-PW-30)pipes.shift();
     const last=pipes[pipes.length-1];if(last.x<W-238)spawnPipe(last.x+238);
@@ -1010,9 +1011,9 @@ function update(dt){
         const hsNow=!hsPlayed&&best>0&&score===best+1;if(hsNow){hsPlayed=true;birdCall('hs',null,1);pops.push({x:W/2,y:165,s:'NEW BEST!',life:0});}
         if(score%10===0){sfx.milestone();if(!hsNow){birdCall('ten');pops.push({x:W/2,y:165,s:score+'!',life:0});}}else sfx.score();
         for(let i=0;i<10;i++){const a=rnd(0,Math.PI*2),v=rnd(40,170);parts.push({t:'spark',x:p.x+PW/2,y:p.gy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:0,max:rnd(.3,.7),s:rnd(1,2.6)});}}
-      if(circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900)){die(false);break;}
+      if(!bench&&circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900)){die(false);break;}
     }
-    if(state==='play'&&bird.y+8>GY)die(true);
+    if(state==='play'&&bird.y+8>GY&&!bench)die(true);
   }else if(state==='dead'){
     deadT+=dt;
     if(!bird.inWater){bird.vy=Math.min(bird.vy+GRAV*dt,1000);bird.y+=bird.vy*dt;bird.rot=lerp(bird.rot,1.3,1-Math.pow(.003,dt));if(bird.y>GY-3){bird.inWater=true;splash(bird.x);}}
@@ -1238,21 +1239,32 @@ function drawWater(P,sun){
 // reads the edge colour instead of stale/empty padding pixels
 function bEdge(c,x){if(c.width>c.lw){x.globalCompositeOperation='copy';x.drawImage(c,c.lw-1,0,1,c.lh,c.lw,0,1,c.lh);}
   if(c.height>c.lh){x.globalCompositeOperation='copy';x.drawImage(c,0,c.lh-1,c.lw+1,1,0,c.lh,c.lw+1,1);}x.globalCompositeOperation='source-over';}
+// the glare input is the static scene (sky, clouds, land, light shafts): draw it straight into the 1/2-res buffer instead of
+// reading the whole full-res canvas back (saves a full-screen read every frame; the result is blurred to 1/8 res anyway)
+function bloomScene(x,c){const k=S*c.lw/cv.width;x.clearRect(0,0,c.width,c.height);x.globalCompositeOperation='source-over';x.setTransform(k,0,0,k,0,0);
+  x.drawImage(skyC,-2,-2,W+4,GY+16);drawClouds(x,false);drawLayer(x,LAYERS[0],BP);drawClouds(x,true);for(let i=1;i<4;i++)drawLayer(x,LAYERS[i],BP);
+  if(volOut){x.globalCompositeOperation='lighter';x.globalAlpha=volA;x.drawImage(volOut,0,0,W,GY+10);x.globalAlpha=1;x.globalCompositeOperation='source-over';}
+  x.setTransform(1,0,0,1,0,0);}
+let BP=null;
 function bloomPass(){
   // bright-pass without CSS filters: x^8 via self-multiply keeps only near-white pixels (fast on mobile GPUs)
   // downsample in exact halving steps (true 2x2 averages), then the x^8 bright-pass at 1/8 res: a one-step 8x shrink only
   // samples a few pixels per block, so thin pipe highlights popped in and out of the glow as pipes moved (flicker)
-  let src=cv;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';x.drawImage(src,0,0,src.lw||src.width,src.lh||src.height,0,0,c.lw,c.lh);
+  let src=null;bChain.forEach((c,i)=>{const x=c.cx;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.imageSmoothingEnabled=true;x.globalCompositeOperation='copy';
+    if(i===0)bloomScene(x,c);else x.drawImage(src,0,0,src.lw||src.width,src.lh||src.height,0,0,c.lw,c.lh);
     if(i===0){ // pipes block the glare as plain silhouettes: solid shapes have exact edge coverage, so they stay steady while moving
       const k=S*c.lw/cv.width;x.setTransform(k,0,0,k,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#000';x.beginPath();
       for(const p of pipes){const top=p.gy-p.gap/2,bot=p.gy+p.gap/2;x.rect(p.x,-40,PW,top+40);x.rect(p.x-7,top-30,PW+14,30);x.rect(p.x,bot,PW,GY+20-bot);x.rect(p.x-7,bot,PW+14,30);}
       x.fill();x.setTransform(1,0,0,1,0,0);}
     if(i===BLOOM_PL){x.globalCompositeOperation='multiply';for(let k=0;k<3;k++)x.drawImage(c,0,0);}x.globalCompositeOperation='source-over';bEdge(c,x);src=c;});
   bQc.globalCompositeOperation='copy';bQc.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bQ.lw,bQ.lh);bEdge(bQ,bQc);bBc.globalCompositeOperation='copy';bBc.drawImage(bQ,0,0,bQ.lw,bQ.lh,0,0,bB.lw,bB.lh);bEdge(bB,bBc);
+  // pre-combine both glare layers at 1/8 res so the screen gets ONE full-screen additive draw instead of two
+  const x=bCc;x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='copy';x.globalAlpha=.2;x.drawImage(bA,0,0,bA.lw,bA.lh,0,0,bC.lw,bC.lh);
+  x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,bC.lw,bC.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(bC,x);
 }
 function bloomDraw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='lighter';ctx.imageSmoothingEnabled=true;
-  ctx.globalAlpha=.2;ctx.drawImage(bA,0,0,bA.lw,bA.lh,0,0,cv.width,cv.height);ctx.globalAlpha=.345;ctx.drawImage(bB,0,0,bB.lw,bB.lh,0,0,cv.width,cv.height);
+  ctx.drawImage(bC,0,0,bC.lw,bC.lh,0,0,cv.width,cv.height);
   ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.setTransform(S,0,0,S,0,0);
 }
 function lensFlare(sun){
@@ -1342,7 +1354,7 @@ function render(){
   drawLayer(c,LAYERS[2],P);
   drawLayer(c,LAYERS[3],P);
   volLight(c,P,sun);   // light shafts live in the air behind the pipes/bird: they no longer streak across the pipes
-  if(bA)bloomPass();   // glare is computed from the static scene (sky, sun, land, shafts) before pipes/bird: nothing moving can make it flicker
+  if(bA){BP=P;bloomPass();}   // glare is computed from the static scene (sky, sun, land, shafts) before pipes/bird: nothing moving can make it flicker
   drawMotes(c,P,sun);
   for(const p of pipes)drawPipe(c,p);
   drawParts(c);
@@ -1359,7 +1371,7 @@ function render(){
     if(graded){if(gvKey!==P.gr){gvKey=P.gr;gvX.setTransform(1,0,0,1,0,0);gvX.fillStyle=P.gr;gvX.fillRect(0,0,gvC.width,gvC.height);gvX.drawImage(vigC,0,0,gvC.width,gvC.height);}
       c.globalCompositeOperation='multiply';c.drawImage(gvC,0,0,W,H);c.globalCompositeOperation='source-over';}
     else c.drawImage(vigC,0,0,W,H);}
-  if(Q.grain){c.save();c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='overlay';c.globalAlpha=.06;c.translate(Math.random()*128|0,Math.random()*128|0);c.fillStyle=noisePat;c.fillRect(-128,-128,cv.width+128,cv.height+128);c.restore();}
+  if(Q.grain){c.save();c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='overlay';c.globalAlpha=.06;const gx=Math.random()*128|0,gy=Math.random()*128|0;c.translate(gx,gy);c.fillStyle=noisePat;c.fillRect(-gx,-gy,cv.width,cv.height);c.restore();}
   if(flash>0){c.fillStyle=`rgba(255,250,240,${flash*.7})`;c.fillRect(0,0,W,H);}
   if(snap&&(state!=='play'||paused)){snapc.drawImage(cv,0,0);}
   layoutBtns();
@@ -1371,6 +1383,7 @@ function render(){
   if(state!=='play')drawSkinBtn();
   drawMute();
   if(set.fps)txt(fpsTxt,W/2,H-14,12,{w:600,fill:'rgba(255,255,255,.85)'});
+  if(bench){glass(W/2-140,H-92,280,52,16);txt(`Performance test ${bench.i+1}/${BENCH.length}`,W/2,H-78,14);txt(BENCH[bench.i][0],W/2,H-58,13,{w:400});}
 }
 
 
@@ -1386,6 +1399,7 @@ const UI=[
  {k:'res',show:()=>!dsk||set.pcres==='native',label:'Render resolution',desc:'Relative to your screen. Below Native is faster, above Native is sharper but much heavier',type:'seg',opts:[['s0.5','0.5×'],['s0.75','0.75×'],['native','Native'],['s1.5','1.5×'],['s2','2×']]},
  {k:'cap',label:'Frame rate limit',desc:'60 keeps a 120 Hz phone cool with full graphics',type:'seg',opts:[['30','30'],['60','60'],['90','90'],['120','120'],['max','Max']]},
  {k:'fps',label:'FPS counter',type:'tog'},
+ {bench:true,show:()=>!!(+set.betaUnlocked||IS_BETA_WEB)},
  {sec:'Lighting'},
  {k:'vol',label:'Volumetric light',tag:'medium',desc:'Sun beams blocked by pipes, clouds, mountains and the bird',type:'tog'},
  {k:'rays',label:'Stylised sun rays',tag:'light',desc:'Painted rays in the sky behind everything',type:'tog'},
@@ -1424,6 +1438,9 @@ function buildSettings(){
     if(it.sec){h+=`<div class="sec">${it.sec}</div>`;continue;}
     if(it.updates){const u=updState||{},st={checking:'Checking\u2026',downloading:'Downloading'+(u.progress?` ${Math.round(u.progress*100)}%`:'\u2026'),ready:`Version ${u.ready&&u.ready.version} ready, restart to apply`,app:`App update ${u.app&&u.app.version} available`,uptodate:'You\u2019re up to date',error:'Couldn\u2019t check, '+(u.error||'offline?')}[u.status]||'';
       h+=`<div class="row col"><div id="updVer"><div class="lbl">Version</div><div class="desc">Game ${window.SKYFLAP_GAME_VERSION}${u.appVersion?' \u00b7 App '+u.appVersion:''}${set.channel==='beta'||IS_BETA_WEB?' \u00b7 <b style="color:#ffb27a">TEST</b>':''}</div></div><div class="btnrow"><button id="updChk">Check now</button>${u.ready?'<button id="updRst">Restart now</button>':''}${u.app?'<button id="updIns">Install app update</button>':''}<span>${st}</span></div></div>`;continue;}
+    if(it.bench){let r=[];try{r=JSON.parse(localStorage.getItem('skyflap_bench')||'[]');}catch(e){}
+      h+=`<div class="row col"><div><div class="lbl">Performance test</div><div class="desc">Auto-plays ~50 s at High in a sunset scene, switching one effect off at a time, and measures FPS (frame limit is ignored during the test).</div></div><div class="btnrow"><button id="benchGo">Run test</button></div>`+
+        (r.length?`<div class="desc" style="line-height:1.55;margin-top:6px;font-variant-numeric:tabular-nums">${r.map(x=>`${x.l}: <b>${x.fps}</b> fps <span style="opacity:.7">(1% low ${x.low})</span>`).join('<br>')}<br><span style="opacity:.7">${r[0].res||''}</span></div>`:'')+`</div>`;continue;}
     if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">Sounds are CC0 / public domain unless noted. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; water splash: custom sound supplied by the player. Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
@@ -1449,6 +1466,7 @@ function changeSetting(k,v){
 let verTaps=0,verT=0;
 setB.addEventListener('click',e=>{
   if(e.target.closest&&e.target.closest('#updVer')&&!+set.betaUnlocked){const n=performance.now();verTaps=n-verT<900?verTaps+1:1;verT=n;if(verTaps>=7){set.betaUnlocked=1;saveSet();buildSettings();}return;}
+  if(e.target.id==='benchGo'){closeSettings();startBench();return;}
   if(e.target.id==='updChk'){updCheck(false);return;}if(e.target.id==='updRst'){host.restart();return;}if(e.target.id==='updIns'){host.install();return;}const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;
   if(b.dataset.v!==undefined)changeSetting(k,b.dataset.v);else changeSetting(k,getV(k)?0:1);});
 function openSettings(){ensureAudio();if(state==='play')paused=true;setOpen=true;buildSettings();setEl.classList.add('open');}
@@ -1557,11 +1575,23 @@ if(host){
 // ---------- loop with automatic quality scaling ----------
 let last=performance.now(),perfAcc=0,perfN=-60,fpsN=0,fpsT=0,fpsTxt='',fpsVal=0;
 let lastR=-1e9;
+// ---------- on-device performance test: auto-pilot, one effect off at a time ----------
+const BENCH=[['High (all on)',{}],['without Volumetric light',{vol:0}],['without Bloom',{bloom:0}],['without Film grain',{grain:0}],['without Vignette',{vignette:0}],
+  ['without Lens flare',{flare:0}],['without Clouds',{clouds:0}],['without Dust & fireflies',{motes:0}],['Water reflections Low',{refl:'1'}],['Water reflections Off',{refl:'0'}],['0.75x resolution',{res:'s0.75'}]];
+let bench=null;
+function startBench(){bench={i:-1,saved:JSON.stringify(set),muted,out:[]};muted=true;applyVolumes();startGame();nextBench();}
+function nextBench(){bench.i++;if(bench.i>=BENCH.length){endBench();return;}
+  set=Object.assign(JSON.parse(bench.saved),PRESETS.high,BENCH[bench.i][1],{cap:'max',tod:'sunset'});phase=TOD.sunset;resize();skyAge=99;bench.t=0;bench.ft=[];}
+function benchTick(raw){if(!bench||raw<=0||raw>.5)return;bench.t+=raw;if(bench.t>1.2)bench.ft.push(raw);
+  if(bench.t>4.6){const f=bench.ft.slice().sort((a,b)=>b-a),avg=f.reduce((a,b)=>a+b,0)/f.length,low=f[Math.max(0,Math.floor(f.length*.01))];
+    bench.out.push({l:BENCH[bench.i][0],fps:Math.round(1/avg),low:Math.round(1/low),res:`Rendering ${cv.width}×${cv.height}`});nextBench();}}
+function endBench(){const out=bench.out;set=JSON.parse(bench.saved);muted=bench.muted;bench=null;applyVolumes();resize();skyAge=99;state='menu';resetBird();pipes=[];
+  try{localStorage.setItem('skyflap_bench',JSON.stringify(out));}catch(e){}openSettings();}
 function loop(now){
   requestAnimationFrame(loop);
   const cap=set.cap==='max'?0:+set.cap;if(cap){const iv=1000/cap;if(now-lastR<iv-1.5)return;lastR=now-lastR>iv*2?now:lastR+iv;}
   const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
-  update(dt);render();
+  benchTick(raw);update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
   if(host&&(frame&15)===0)updRender();
   fpsN++;fpsT+=raw;if(fpsT>=.5){fpsVal=Math.round(fpsN/fpsT);fpsTxt=fpsVal+' FPS';fpsN=0;fpsT=0;if(setOpen)updateStatus();}

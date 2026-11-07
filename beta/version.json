@@ -1,1 +1,1 @@
-{"version": "1.9.3", "notes": "Performance: effect buffers (light shafts, reflections, colour grade, bloom) now always stay on the GPU. Fixes 0.5x running worse than Native, and speeds up small windows on PC."}
+{"version": "1.9.4", "notes": "Faster bloom (one full-screen pass instead of two, no full-screen read-back) and grain. New: Settings > Performance test - measures FPS on your device with each effect switched off in turn."}
