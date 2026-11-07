@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.4';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.5';</script>
 <script>
 (() => {
 'use strict';
@@ -145,6 +145,13 @@ const grime=document.createElement('canvas');grime.width=128;grime.height=512;
 const noise=document.createElement('canvas');noise.width=noise.height=128;
 (()=>{const g=noise.getContext('2d'),d=g.createImageData(128,128);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}g.putImageData(d,0,0);})();
 const noisePat=ctx.createPattern(noise,'repeat');
+// Film grain, pre-rendered once: the old per-frame 'overlay' blend (6% strength) is not done in hardware on many phone GPUs
+// (9 fps vs 29 fps on a Nothing 3a Pro). Equivalent here: light/dark specks with alpha, drawn with the normal blend.
+// At mid-tones overlay(d,n) at 6% shifts d by .06*(n-.5) -> white/black at alpha .12*|n-.5| gives the same shift.
+const grainTile=document.createElement('canvas');grainTile.width=grainTile.height=256;
+(()=>{const g=grainTile.getContext('2d'),d=g.createImageData(256,256);for(let i=0;i<d.data.length;i+=4){const n=Math.random(),v=n>.5?255:0;
+  d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=Math.round(255*.1*Math.abs(n-.5));}g.putImageData(d,0,0);})();
+const grainPat=ctx.createPattern(grainTile,'repeat');
 function makeCloud(seed){
   let s=seed*9973;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
   const w=300,h=130;
@@ -1361,7 +1368,7 @@ function render(){
     if(graded){if(gvKey!==P.gr){gvKey=P.gr;gvX.setTransform(1,0,0,1,0,0);gvX.fillStyle=P.gr;gvX.fillRect(0,0,gvC.width,gvC.height);gvX.drawImage(vigC,0,0,gvC.width,gvC.height);}
       c.globalCompositeOperation='multiply';c.drawImage(gvC,0,0,W,H);c.globalCompositeOperation='source-over';}
     else c.drawImage(vigC,0,0,W,H);}
-  if(Q.grain){c.save();c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='overlay';c.globalAlpha=.06;const gx=Math.random()*128|0,gy=Math.random()*128|0;c.translate(gx,gy);c.fillStyle=noisePat;c.fillRect(-gx,-gy,cv.width,cv.height);c.restore();}
+  if(Q.grain){c.save();c.setTransform(1,0,0,1,0,0);c.fillStyle=grainPat;c.fillRect(0,0,cv.width,cv.height);c.restore();}
   if(flash>0){c.fillStyle=`rgba(255,250,240,${flash*.7})`;c.fillRect(0,0,W,H);}
   if(snap&&(state!=='play'||paused)){snapc.drawImage(cv,0,0);}
   layoutBtns();

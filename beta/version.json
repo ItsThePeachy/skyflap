@@ -1,1 +1,1 @@
-{"version": "1.9.4", "notes": "Faster bloom (one full-screen pass instead of two, no full-screen read-back) and grain. New: Settings > Performance test - measures FPS on your device with each effect switched off in turn."}
+{"version": "1.9.5", "notes": "Film grain is now a static pre-rendered texture drawn with a normal blend (the old per-frame overlay blend ran in a slow fallback on many phone GPUs)."}
