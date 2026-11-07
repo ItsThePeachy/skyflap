@@ -24,8 +24,8 @@
   "versionCode": 8,
   "notes": "Android app 1.5.2: asks the phone for its highest screen refresh rate (Android was keeping the game at 60 Hz). Game: pre-rendered grain/vignette.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
-  "sha256": "1cb99c45decf34d673b504537461636771441f1becbb899a952178927fe2300f",
-  "size": 1394031
+  "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
+  "size": 2626988
  },
  "windows": {
   "version": "1.6.0",
