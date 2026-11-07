@@ -93,7 +93,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.1';</script>
+<script>window.SKYFLAP_GAME_VERSION='1.9.2';</script>
 <script>
 (() => {
 'use strict';
@@ -119,9 +119,9 @@ const FILTER=(()=>{try{const a=document.createElement('canvas');a.width=a.height
 // ---------- quality tiers ----------
 const coarse=matchMedia('(pointer:coarse)').matches;
 const PRESETS={
-  low:  {res:'1',     vol:0,rays:1,bloom:0,flare:0,refl:'1',clouds:1,motes:0,grain:0,vignette:1,glass:0},
-  med:  {res:'1.5',   vol:1,rays:0,bloom:0,flare:1,refl:'2',clouds:1,motes:1,grain:0,vignette:1,glass:0},
-  high: {res:'2',     vol:1,rays:0,bloom:1,flare:1,refl:'3',clouds:1,motes:1,grain:1,vignette:1,glass:1},
+  low:  {res:'s0.5',     vol:0,rays:1,bloom:0,flare:0,refl:'1',clouds:1,motes:0,grain:0,vignette:1,glass:0},
+  med:  {res:'s0.75',   vol:1,rays:0,bloom:0,flare:1,refl:'2',clouds:1,motes:1,grain:0,vignette:1,glass:0},
+  high: {res:'native',     vol:1,rays:0,bloom:1,flare:1,refl:'3',clouds:1,motes:1,grain:1,vignette:1,glass:1},
   ultra:{res:'native',vol:1,rays:0,bloom:1,flare:1,refl:'3',clouds:1,motes:1,grain:1,vignette:1,glass:1},
 };
 const LADDER=['ultra','high','med','low'],GFX=['res','vol','rays','bloom','flare','refl','clouds','motes','vignette','grain','glass'];
@@ -132,9 +132,12 @@ try{Object.assign(set,JSON.parse(localStorage.getItem('skyflap_settings')||'{}')
 const applyPreset=n=>{if(PRESETS[n])Object.assign(set,PRESETS[n]);};
 if(set.preset==='auto'){set.preset=LADDER[autoLvl];setTimeout(()=>saveSet(),0);}   // Auto preset removed: keep the level it started people on
 applyPreset(set.preset);
+if(['0.75','1','1.5','2'].includes(String(set.res))){const r=+set.res/(window.devicePixelRatio||1);set.res=r<.62?'s0.5':r<.88?'s0.75':'native';setTimeout(()=>saveSet(),0);}
 function saveSet(){try{localStorage.setItem('skyflap_settings',JSON.stringify(set));}catch(e){}}
-function computeQ(){const base=set.res==='native'?3:+set.res,l=+set.refl;
-  Q={dpr:base,bloom:+set.bloom,grain:+set.grain,rays:set.rays?(base>=2?16:10):0,flare:+set.flare,blur:+set.glass,vol:+set.vol,
+// render resolution = native pixel density x multiplier (0.5x .. 2x), capped at 6 device px per CSS px
+const resMult=()=>set.res==='native'?1:(+String(set.res).replace('s','')||1);
+function computeQ(){const m=resMult(),dpr=Math.min(6,(window.devicePixelRatio||1)*m),base=m>=1?3:m>=.75?1.5:1,l=+set.refl;   // base: effect detail tier
+  Q={dpr,bloom:+set.bloom,grain:+set.grain,rays:set.rays?(base>=2?16:10):0,flare:+set.flare,blur:+set.glass,vol:+set.vol,
      water:[3,3,2,1.5][l],refl:[0,.3,.45,.6][l],sky:base>=2?.6:base>=1.5?.45:.35,skyEvery:base>=2?3:5,glints:set.flare?30:16,
      motes:set.motes?40:0,step:base>=2?6:base>=1.5?8:10,clouds:+set.clouds,vignette:+set.vignette};}
 computeQ();
@@ -811,7 +814,7 @@ const saProbe=document.createElement('div');saProbe.style.cssText='position:fixe
 let SAT=0,SAB=0;
 function resize(){
   computeQ();
-  DPR=(window.skyflapDesktop&&set.pcres&&set.pcres!=='native')?clamp(+set.pcres/Math.max(1,innerHeight),.25,4)*dprScale:Math.min(window.devicePixelRatio||1,Q.dpr)*dprScale;
+  DPR=(window.skyflapDesktop&&set.pcres&&set.pcres!=='native')?clamp(+set.pcres/Math.max(1,innerHeight),.25,4)*dprScale:Q.dpr*dprScale;
   cv.width=Math.round(innerWidth*DPR);cv.height=Math.round(innerHeight*DPR);
   S=cv.height/H;W=cv.width/S;
   {const r=saProbe.getBoundingClientRect();SAT=r.top*DPR/S;SAB=r.height*DPR/S;}
@@ -1373,7 +1376,7 @@ const UI=[
  {k:'dwin',label:'Window size',type:'seg',show:()=>dsk&&dsk.mode==='windowed',opts:()=>{const o=dsk.sizes.map(([w,h])=>[w+'x'+h,w+'\u00d7'+h]),cur=dsk.w+'x'+dsk.h;if(!o.some(x=>x[0]===cur))o.push([cur,'Custom']);return o;}},
  {k:'pcres',label:'Resolution',desc:'The game renders at this resolution and scales it to fit the screen',type:'seg',show:()=>!!dsk,opts:()=>{const sh=dsk.screen[1],o=[['native','Native']];for(const [v,l] of [['720','720p'],['900','900p'],['1080','1080p'],['1440','1440p'],['2160','4K']])if(+v<=Math.max(sh*1.5,1080))o.push([v,l]);return o;}},
  {sec:'Display'},
- {k:'res',show:()=>!dsk||set.pcres==='native',label:'Render resolution',desc:'Biggest effect on performance',type:'seg',opts:[['0.75','0.75×'],['1','1×'],['1.5','1.5×'],['2','2×'],['native','Native']]},
+ {k:'res',show:()=>!dsk||set.pcres==='native',label:'Render resolution',desc:'Relative to your screen. Below Native is faster, above Native is sharper but much heavier',type:'seg',opts:[['s0.5','0.5×'],['s0.75','0.75×'],['native','Native'],['s1.5','1.5×'],['s2','2×']]},
  {k:'cap',label:'Frame rate limit',desc:'60 keeps a 120 Hz phone cool with full graphics',type:'seg',opts:[['30','30'],['60','60'],['90','90'],['120','120'],['max','Max']]},
  {k:'fps',label:'FPS counter',type:'tog'},
  {sec:'Lighting'},
