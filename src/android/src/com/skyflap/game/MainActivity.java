@@ -43,6 +43,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        // Ask Android for the screen's highest refresh mode (otherwise many phones keep WebView apps at 60 Hz)
+        try {
+            if (Build.VERSION.SDK_INT >= 23) {
+                android.view.Display d = getWindowManager().getDefaultDisplay();
+                android.view.Display.Mode best = d.getMode();
+                for (android.view.Display.Mode m : d.getSupportedModes())
+                    if (m.getPhysicalWidth() == best.getPhysicalWidth() && m.getPhysicalHeight() == best.getPhysicalHeight() && m.getRefreshRate() > best.getRefreshRate()) best = m;
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.preferredDisplayModeId = best.getModeId();
+                getWindow().setAttributes(lp);
+            }
+        } catch (Throwable t) { }
         prefs = getSharedPreferences("updates", MODE_PRIVATE);
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
