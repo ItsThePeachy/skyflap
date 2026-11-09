@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='2.0.0';</script>
+<script>window.SKYFLAP_GAME_VERSION='2.0.1';</script>
 <script>
 (() => {
 'use strict';
@@ -148,10 +148,12 @@ const noisePat=ctx.createPattern(noise,'repeat');
 // Film grain, pre-rendered once: the old per-frame 'overlay' blend (6% strength) is not done in hardware on many phone GPUs
 // (9 fps vs 29 fps on a Nothing 3a Pro). Equivalent here: light/dark specks with alpha, drawn with the normal blend.
 // At mid-tones overlay(d,n) at 6% shifts d by .06*(n-.5) -> white/black at alpha .12*|n-.5| gives the same shift.
-const grainTile=document.createElement('canvas');grainTile.width=grainTile.height=256;
-(()=>{const g=grainTile.getContext('2d'),d=g.createImageData(256,256);for(let i=0;i<d.data.length;i+=4){const n=Math.random(),v=n>.5?255:0;
-  d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=Math.round(255*.1*Math.abs(n-.5));}g.putImageData(d,0,0);})();
-const grainPat=ctx.createPattern(grainTile,'repeat');
+// three independent grain frames, cycled at film speed (24 per second) in random order -> moving film grain at the cost of one plain draw
+const grainPats=[0,1,2].map(()=>{const t=document.createElement('canvas');t.width=t.height=256;const g=t.getContext('2d'),d=g.createImageData(256,256);
+  for(let i=0;i<d.data.length;i+=4){const n=Math.random(),v=n>.5?255:0;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=Math.round(255*.1*Math.abs(n-.5));}
+  g.putImageData(d,0,0);return ctx.createPattern(t,'repeat');});
+let grainIdx=0,grainT=0;
+function grainFrame(){if(time-grainT>=1/24||time<grainT){grainT=time;let n=Math.random()*2|0;if(n>=grainIdx)n++;grainIdx=n;}return grainIdx;}
 function makeCloud(seed){
   let s=seed*9973;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
   const w=300,h=130;
@@ -1367,12 +1369,12 @@ function bloomStage(st){
     x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,T.lw,T.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(T,x);bReady=T;}
 }
 // stage 0 must read the freshly rendered sky (before glow is baked into it), so it starts right after a sky refresh
-let ovG=null,ovGV=null,ovW=0,ovH=0;
-function fullOverlay(withVig){if(ovW!==cv.width||ovH!==cv.height){ovG=ovGV=null;ovW=cv.width;ovH=cv.height;}
-  if(!ovG){ovG=document.createElement('canvas');ovG.width=cv.width;ovG.height=cv.height;const g=ovG.getContext('2d');g.fillStyle=grainPat;g.fillRect(0,0,cv.width,cv.height);}
-  if(withVig&&!ovGV){ovGV=document.createElement('canvas');ovGV.width=cv.width;ovGV.height=cv.height;const g=ovGV.getContext('2d');g.imageSmoothingEnabled=true;
-    g.drawImage(vigC,0,0,cv.width,cv.height);g.drawImage(ovG,0,0);}
-  return withVig?ovGV:ovG;}
+let ovG=[],ovGV=[],ovW=0,ovH=0;
+function fullOverlay(withVig){if(ovW!==cv.width||ovH!==cv.height){ovG=[];ovGV=[];ovW=cv.width;ovH=cv.height;}const k=grainFrame();
+  if(!ovG[k]){const o=ovG[k]=document.createElement('canvas');o.width=cv.width;o.height=cv.height;const g=o.getContext('2d');g.fillStyle=grainPats[k];g.fillRect(0,0,cv.width,cv.height);}
+  if(withVig&&!ovGV[k]){const o=ovGV[k]=document.createElement('canvas');o.width=cv.width;o.height=cv.height;const g=o.getContext('2d');g.imageSmoothingEnabled=true;
+    g.drawImage(vigC,0,0,cv.width,cv.height);g.drawImage(ovG[k],0,0);}
+  return withVig?ovGV[k]:ovG[k];}
 function bloomOnSky(){if(!bA)return;if(!bReady){bloomStage(0);bloomStage(1);bloomStage(2);bNext=frame+9;}else if(bStage<0&&frame>=bNext){bloomStage(0);bStage=1;bNext=frame+9;}skyBloom();}
 function bloomTick(){if(bA&&bStage>0){bloomStage(bStage);bStage=bStage===1?2:-1;}}
 function skyBloom(){if(!bReady)return;const x=skyX;x.save();x.setTransform(S*Q.sky,0,0,S*Q.sky,0,0);x.globalCompositeOperation='lighter';

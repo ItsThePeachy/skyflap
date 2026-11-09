@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "2.0.0",
-  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
+  "version": "2.0.1",
+  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "1e8f016758e3443d6ec7a990d98bf310a08cc0e4cd8dd9b4b0e5f8cfa0f537a2",
-    "size": 221528
+    "sha256": "ed242bcee9f76d7f93be27324a22b54874d32e1480272b5a7182cea0fea44a2d",
+    "size": 221856
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.2",
   "versionCode": 8,
-  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
+  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
   "size": 2626988
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
+  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

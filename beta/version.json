@@ -1,1 +1,1 @@
-{"version": "2.0.0", "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each)."}
+{"version": "2.0.1", "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw."}
