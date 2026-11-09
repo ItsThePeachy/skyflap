@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='1.9.8';</script>
+<script>window.SKYFLAP_GAME_VERSION='2.0.1';</script>
 <script>
 (() => {
 'use strict';
@@ -148,10 +148,12 @@ const noisePat=ctx.createPattern(noise,'repeat');
 // Film grain, pre-rendered once: the old per-frame 'overlay' blend (6% strength) is not done in hardware on many phone GPUs
 // (9 fps vs 29 fps on a Nothing 3a Pro). Equivalent here: light/dark specks with alpha, drawn with the normal blend.
 // At mid-tones overlay(d,n) at 6% shifts d by .06*(n-.5) -> white/black at alpha .12*|n-.5| gives the same shift.
-const grainTile=document.createElement('canvas');grainTile.width=grainTile.height=256;
-(()=>{const g=grainTile.getContext('2d'),d=g.createImageData(256,256);for(let i=0;i<d.data.length;i+=4){const n=Math.random(),v=n>.5?255:0;
-  d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=Math.round(255*.1*Math.abs(n-.5));}g.putImageData(d,0,0);})();
-const grainPat=ctx.createPattern(grainTile,'repeat');
+// three independent grain frames, cycled at film speed (24 per second) in random order -> moving film grain at the cost of one plain draw
+const grainPats=[0,1,2].map(()=>{const t=document.createElement('canvas');t.width=t.height=256;const g=t.getContext('2d'),d=g.createImageData(256,256);
+  for(let i=0;i<d.data.length;i+=4){const n=Math.random(),v=n>.5?255:0;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=Math.round(255*.1*Math.abs(n-.5));}
+  g.putImageData(d,0,0);return ctx.createPattern(t,'repeat');});
+let grainIdx=0,grainT=0;
+function grainFrame(){if(time-grainT>=1/24||time<grainT){grainT=time;let n=Math.random()*2|0;if(n>=grainIdx)n++;grainIdx=n;}return grainIdx;}
 function makeCloud(seed){
   let s=seed*9973;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
   const w=300,h=130;
@@ -308,6 +310,19 @@ function drawBeakSp(c,sp){
       c.fillStyle=k.tip;c.beginPath();c.ellipse(x+L*.98,y+d*.05,L*.14,d*.85,0,0,TAU);c.fill();
       c.fillStyle=k.base;c.fillRect(x-1,y-d,1.6,d*2);c.restore();}
     c.strokeStyle='rgba(60,20,0,.5)';c.lineWidth=.45;c.beginPath();c.moveTo(x,y+d*.06);c.bezierCurveTo(x+L*.3,y+d*.14,x+L*.6,y+d*.06,x+L*.86,y+d*.2);c.stroke();
+  }else if(k.t==='puffin'){ // tall laterally-flattened triangle with grey base plate, yellow ridge band and red-orange tip
+    const pth=new Path2D();pth.moveTo(x-.6,y-d*.5);pth.quadraticCurveTo(x+L*.55,y-d*.42,x+L,y+d*.08);pth.quadraticCurveTo(x+L*.5,y+d*.32,x-.6,y+d*.5);pth.closePath();
+    c.save();c.clip(pth);c.fillStyle=k.up;c.fillRect(x-2,y-d,L+4,d*2);c.fillStyle=k.mid;c.beginPath();c.moveTo(x+L*.3,y-d);c.lineTo(x+L*.44,y-d);c.lineTo(x+L*.36,y+d);c.lineTo(x+L*.24,y+d);c.closePath();c.fill();
+    c.fillStyle=k.base;c.fillRect(x-2,y-d,L*.28,d*2);c.strokeStyle='rgba(120,30,10,.55)';c.lineWidth=.5;for(const f of [.55,.68,.8]){c.beginPath();c.moveTo(x+L*f,y-d*.4);c.quadraticCurveTo(x+L*(f-.04),y,x+L*(f-.1),y+d*.4);c.stroke();}
+    const g=c.createLinearGradient(0,y-d*.5,0,y+d*.5);g.addColorStop(0,'rgba(255,255,255,.3)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(0,0,0,.25)');c.fillStyle=g;c.fillRect(x-2,y-d,L+4,d*2);c.restore();
+    c.strokeStyle='rgba(60,20,10,.6)';c.lineWidth=.45;c.beginPath();c.moveTo(x,y+d*.06);c.quadraticCurveTo(x+L*.5,y+d*.08,x+L*.96,y+d*.1);c.stroke();
+  }else if(k.t==='shoe'){ // huge broad 'clog' bill with a hooked tip
+    c.beginPath();c.moveTo(x-.6,y-d*.5);c.bezierCurveTo(x+L*.35,y-d*.78,x+L*.85,y-d*.55,x+L,y-d*.05);c.quadraticCurveTo(x+L+1,y+d*.32,x+L-1.6,y+d*.38);
+    c.quadraticCurveTo(x+L*.6,y+d*.2,x,y+d*.12);c.closePath();c.fillStyle=beakGrad(c,x,y-d*.15,d*.8,k.up);c.fill();
+    c.beginPath();c.moveTo(x,y+d*.12);c.quadraticCurveTo(x+L*.6,y+d*.22,x+L*.92,y+d*.36);c.quadraticCurveTo(x+L*.5,y+d*.66,x-.6,y+d*.5);c.closePath();c.fillStyle=beakGrad(c,x,y+d*.35,d*.4,dk(k.up,.82));c.fill();
+    c.fillStyle='rgba(90,70,50,.35)';for(let i=0;i<9;i++){c.beginPath();c.ellipse(x+L*(.15+((i*37)%70)/100),y-d*(.35-((i*23)%40)/100),.8,.5,0,0,TAU);c.fill();}
+    c.strokeStyle='rgba(60,40,20,.55)';c.lineWidth=.5;c.beginPath();c.moveTo(x,y+d*.12);c.quadraticCurveTo(x+L*.6,y+d*.22,x+L*.92,y+d*.36);c.stroke();
+    c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=.6;c.beginPath();c.moveTo(x+L*.1,y-d*.5);c.bezierCurveTo(x+L*.4,y-d*.66,x+L*.8,y-d*.5,x+L*.95,y-d*.12);c.stroke();
   }else if(k.t==='duck'){ // flat spatulate bill (ducks, swans); optional black knob + base (mute swan)
     c.beginPath();c.moveTo(x-.6,y-d/2);c.quadraticCurveTo(x+L*.5,y-d*.62,x+L*.92,y-d*.22);c.quadraticCurveTo(x+L*1.05,y+d*.05,x+L*.9,y+d*.26);c.lineTo(x,y+d*.16);c.closePath();
     c.fillStyle=beakGrad(c,x,y-d*.15,d*.8,k.up);c.fill();
@@ -334,6 +349,7 @@ function drawTailSp(c,sp){
     else if(t.col2){const b=t.band||.8;g.addColorStop(0,t.col);g.addColorStop(b*.96,dk(t.col,.85));g.addColorStop(b,t.col2);g.addColorStop(1,t.col2);}
     else{g.addColorStop(0,mixRGB(t.col,'#ffffff',.08));g.addColorStop(1,dk(t.col,.72));}
     featherPath(c,L,t.w);c.fillStyle=g;c.fill();
+    if(t.eyes){const E2=t.eyes;for(const f of [.55,.88]){const ex=-L*f,er=t.w*(f>.8?.95:.7);for(let q=0;q<E2.length;q++){c.fillStyle=E2[q];c.beginPath();c.ellipse(ex,0,er*(1-q*.22)*1.25,er*(1-q*.22),0,0,TAU);c.fill();}}}
     if(t.bars){c.save();featherPath(c,L,t.w);c.clip();c.strokeStyle=rgba(t.bars,.85);c.lineWidth=.5;c.beginPath();for(let x=-4;x>-L*.82;x-=2.6){c.moveTo(x,-t.w);c.lineTo(x+.6,t.w);}c.stroke();c.restore();}
     c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=.45;featherPath(c,L,t.w);c.stroke();
     c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=.35;c.beginPath();c.moveTo(-1,0);c.lineTo(-L*.9,-.3);c.stroke();c.restore();}
@@ -359,6 +375,13 @@ function drawLegsSp(c,sp){
     c.strokeStyle='#141414';c.lineWidth=.9;c.beginPath();c.moveTo(-4,b.u+4.5);c.quadraticCurveTo(-6,b.u+5,-5.6,b.u+6.4);c.moveTo(1,b.u+5.2);c.quadraticCurveTo(-.5,b.u+6.4,.4,b.u+7.4);c.stroke();}
 }
 function drawCrestSp(c,sp){const h=sp.head,cr=sp.crest;
+  if(cr.t==='fan'){c.save();c.translate(h.x-h.r*.1,h.y-h.r*.75);c.lineCap='round';
+    for(let i=0;i<cr.n;i++){const a=-1.95+i*(1.15/(cr.n-1)),L=cr.len*(.75+.25*Math.sin(Math.PI*i/(cr.n-1)));c.save();c.rotate(a);
+      if(cr.w>2){const g=c.createLinearGradient(0,0,L,0);g.addColorStop(0,cr.c);g.addColorStop(.7,cr.c);g.addColorStop(.72,cr.tip);g.addColorStop(1,cr.tip);c.fillStyle=g;
+        c.beginPath();c.moveTo(0,-cr.w*.35);c.quadraticCurveTo(L*.6,-cr.w*.65,L,0);c.quadraticCurveTo(L*.6,cr.w*.65,0,cr.w*.35);c.closePath();c.fill();}
+      else{c.strokeStyle=cr.c;c.lineWidth=.55;c.beginPath();c.moveTo(0,0);c.lineTo(L,0);c.stroke();c.fillStyle=cr.tip;c.beginPath();c.ellipse(L,0,1.5,cr.w*.7,0,0,TAU);c.fill();}
+      c.restore();}
+    c.restore();return;}
   c.beginPath();c.moveTo(h.x+h.r*.45,h.y-h.r*.8);c.quadraticCurveTo(h.x-h.r*.2,h.y-h.r*1.9,h.x-h.r*1.3-cr.len*.12,h.y-h.r*1.85-cr.len*.12);
   c.quadraticCurveTo(h.x-h.r*.65,h.y-h.r*1.25,h.x-h.r*.95,h.y-h.r*.1);c.closePath();
   const g=c.createLinearGradient(0,h.y-h.r*2.2,0,h.y);g.addColorStop(0,mixRGB(cr.c,'#ffffff',.2));g.addColorStop(1,dk(cr.c,.75));c.fillStyle=g;c.fill();
@@ -777,8 +800,99 @@ const SPECIES={
    wing:{arm:18,pl:28,np:7,fan:.06,pw:3.2,ns:6,sl:9,spots:'#1c1410',col:{cov:'#b8643a',sec:'#a05432',pri:'#2a2220',edge:'#e8b888'},sh:[0,-5.5],fsh:[-2,-8.5],amp:1},
    legs:{t:'tuck',col:'#f2c83a'},
    fact:'UV vision hunters: Kestrels can see ultraviolet light, enabling them to track the UV-reflective urine trails left by voles and mice across open ground from high in the air.'},
+ puffin:{name:'Atlantic Puffin',short:'Puffin',sci:'Fratercula arctica',group:'Featured',
+   body:{f:12,r:15,t:10,u:11},head:{x:12.5,y:-6.5,r:8},
+   col:{back:'#141418',mid:'#e8e6e2',belly:'#f6f5f2'},sheen:'#6a6a80',
+   patches:[E(-4,-8,14,6,'#141418',{soft:.5}),E(13,-5,8,6.5,'#ebe8e3',{soft:.75}),E(11,-12.2,8,3.6,'#141418',{soft:.7}),{t:'s',pts:[[16,1.5],[11,3.2],[5,1.2]],w:2.4,c:'#141418'}],
+   eye:{x:15,y:-7.4,r:1.7,ring:'#d8462a',rw:.55},
+   beak:{t:'puffin',x:18.4,y:-6.4,len:9,d:9.6,up:'#f0562a',mid:'#f4c52a',base:'#7a8696'},
+   tail:{x:-14,y:-1,len:10,n:6,spread:.22,w:3.6,col:'#141418'},
+   wing:{arm:11,pl:17,np:6,fan:.08,pw:3.4,ns:5,sl:7,col:{cov:'#18181d',sec:'#141418',pri:'#0f0f12',edge:'#4a4a5a'},sh:[0,-5],fsh:[-2,-8],amp:1.35},
+   legs:{t:'feet',col:'#f07a2a',behind:true},
+   fact:'Can carry a dozen or more small fish crosswise in its bill at once, gripping them with backward-pointing spines on its tongue and palate.'},
+ quetzal:{name:'Resplendent Quetzal',short:'Quetzal',sci:'Pharomachrus mocinno',group:'Featured',
+   body:{f:11,r:16,t:10,u:10.5},head:{x:12,y:-7,r:8},crest:{c:'#2ab055',len:5},
+   col:{back:'#1f9a4a',mid:'#2aa850',belly:'#d81e2a'},sheen:'#8affb0',
+   patches:[E(2,-6,15,7,'#22a24e',{soft:.6}),E(4,6,13,5.5,'#d81e2a',{soft:.65}),E(13,-7,8.4,8,'#26a852',{soft:.75})],
+   eye:{x:14.8,y:-8,r:2},
+   beak:{t:'cone',x:18.6,y:-6,len:4.6,d:4,curve:.6,up:'#f2d02a',lo:'#e8c022'},
+   tail:{x:-15,y:-1,len:24,n:6,spread:.12,w:3.4,col:'#1f9a4a',col2:'#f4f4f0',band:.72,streamer:58},
+   wing:{arm:13,pl:20,np:6,fan:.1,pw:3.8,ns:6,sl:9,col:{cov:'#22a24e',sec:'#1a7a3a',pri:'#142a1a',edge:'#8affb0'},sh:[0,-6],fsh:[-2,-9]},
+   legs:{t:'tuck',col:'#8a7a5a'},
+   fact:'The male’s tail streamers can be longer than its body. The Maya and Aztecs revered it, and Guatemala’s currency is named after it.'},
+ shoebill:{name:'Shoebill',sci:'Balaeniceps rex',group:'Featured',scale:1.12,
+   body:{f:13,r:20,t:11,u:12},head:{x:16,y:-8,r:8.6},
+   col:{back:'#7c8794',mid:'#8a95a2',belly:'#97a2ae'},tex:'rgba(40,50,60,.14)',
+   patches:[E(11.5,-15,3,2,'#6e7986',{soft:.5})],
+   eye:{x:18.2,y:-10.2,r:2,iris:'#eef0e2',pupil:.38},
+   beak:{t:'shoe',x:21.4,y:-8,len:17,d:11,up:'#c8b8a0'},
+   tail:{x:-19,y:-1,len:14,n:7,spread:.24,w:4.2,col:'#6e7986'},
+   wing:{arm:22,pl:32,np:7,fan:.12,pw:4.4,ns:8,sl:12,fingers:true,col:{cov:'#86919e',sec:'#6e7986',pri:'#4a525c',edge:'#c0c8d2'},sh:[0,-6],fsh:[-2,-9],amp:.85},
+   legs:{t:'trail',col:'#3a3a3a',len:30,behind:true},
+   fact:'Stands motionless for hours waiting to ambush lungfish, and greets its mate with loud machine-gun-like bill clattering.'},
+ peafowl:{name:'Indian Peafowl',short:'Peafowl',sci:'Pavo cristatus',group:'Featured',scale:1.08,
+   body:{f:12,r:17,t:10,u:11},head:{x:14,y:-10,r:6.4},neck:{w:9},crest:{t:'fan',n:6,len:9,c:'#2a3a6a',tip:'#2a6ad8',w:1.6},
+   col:{back:'#1f4ec8',mid:'#2a5ad0',belly:'#1a3a8a'},sheen:'#6ae0ff',
+   patches:[E(12,-7,8,8,'#1f55d8',{soft:.75}),E(-8,-6,12,6,'#5a8a3a',{soft:.5}),{t:'s',pts:[[17.4,-12.2],[15,-12.6],[11.8,-11.6]],w:.9,c:'#f2f2f2'},{t:'s',pts:[[17,-9.6],[14.8,-9.2],[12,-9.8]],w:.9,c:'#f2f2f2'}],
+   eye:{x:15.8,y:-11,r:1.6},
+   beak:{t:'cone',x:19.4,y:-9.4,len:5,d:2.6,curve:.7,up:'#9a8a7a',lo:'#8a7a6a'},
+   tail:{x:-15,y:-2,len:54,n:9,spread:.16,w:5,col:'#3a7a3a',eyes:['#2a8a5a','#c89a2a','#2a4ad0','#141432']},
+   wing:{arm:15,pl:24,np:7,fan:.1,pw:4,ns:6,sl:10,bars:'#3a2a1a',col:{cov:'#c8b090',sec:'#b09a78',pri:'#a0562a',edge:'#e8d0a8'},sh:[0,-6],fsh:[-2,-9],amp:1},
+   legs:{t:'tuck',col:'#8a8a8a'},
+   fact:'The famous “tail” is really a train of up to 200 elongated back feathers, each tipped with an eyespot, that can be over 1.5 m long.'},
+ snowyowl:{name:'Snowy Owl',sci:'Bubo scandiacus',group:'Featured',scale:1.05,
+   body:{f:12,r:16,t:12,u:12},head:{x:11,y:-8,r:10},
+   col:{back:'#f4f4f0',mid:'#f6f6f2',belly:'#fafaf6'},tex:'rgba(80,80,90,.1)',
+   patches:[E(13,-7,7.5,7,'#ffffff',{soft:.7}),
+     {t:'f',fn:c=>{c.fillStyle='rgba(40,40,46,.7)';for(let i=0;i<22;i++){const x=-12+((i*31)%24),y=-8+((i*47)%16);c.beginPath();c.ellipse(x,y,.9,.5,.2,0,TAU);c.fill();}}}],
+   eye:{x:15.4,y:-8.6,r:2.6,iris:'#f2c81a',pupil:.5,ring:'#141414',rw:.45},
+   beak:{t:'hook',x:19,y:-6.6,len:4,d:3.6,hook:1.6,up:'#2a2a2a',lo:'#1a1a1a'},
+   tail:{x:-15,y:-1,len:12,n:6,spread:.2,w:4,col:'#f2f2ee',bars:'#6a6a6a'},
+   wing:{arm:20,pl:30,np:7,fan:.12,pw:4.4,ns:7,sl:11,fingers:true,spots:'#3a3a40',bars:'#8a8a92',col:{cov:'#f6f6f2',sec:'#ececea',pri:'#e6e6e2',edge:'#ffffff'},sh:[0,-6],fsh:[-2,-9],amp:.9},
+   legs:{t:'talon',col:'#2a2a2a',fur:'#f6f6f2'},
+   fact:'Unlike most owls it hunts in daylight: in the Arctic summer the sun never sets, so it has no choice.'},
+ hummingbird:{name:'Ruby-throated Hummingbird',short:'Hummingbird',sci:'Archilochus colubris',group:'Featured',scale:.72,
+   body:{f:10,r:12,t:8.5,u:9},head:{x:10.5,y:-5.5,r:7},
+   col:{back:'#2f8a4a',mid:'#c8d0c0',belly:'#eef0e8'},sheen:'#9affc0',
+   patches:[E(-2,-6,13,5,'#3a9a52',{soft:.6}),E(10.5,-8,7,4,'#3a9a52',{soft:.6}),E(13.5,-1.5,4.8,3.8,'#e0182a',{soft:.6}),E(14,-2.5,2.4,1.6,'#ff6a5a',{a:.7})],
+   eye:{x:13,y:-6.4,r:1.8},
+   beak:{t:'slender',x:16.6,y:-5.4,len:16,d:1.6,curve:.2,up:'#141414'},
+   tail:{x:-11,y:-1,len:9,n:5,spread:.3,w:2.6,col:'#2a3a2a',fork:.3},
+   wing:{arm:10,pl:18,np:6,fan:.04,pw:2.6,ns:4,sl:5,col:{cov:'#4a5a4a',sec:'#3a4a3a',pri:'#2a322a',edge:'#9aa89a'},sh:[0,-5],fsh:[-2,-8],amp:1.6},
+   legs:{t:'tuck',col:'#2a2a2a'},
+   fact:'Weighs about 3 grams, yet flies non-stop across the Gulf of Mexico (around 800 km) on migration; its heart can beat over 1,200 times a minute.'},
+ hoopoe:{name:'Eurasian Hoopoe',short:'Hoopoe',sci:'Upupa epops',group:'Featured',
+   body:{f:11,r:16,t:10,u:10.5},head:{x:12,y:-7,r:7.4},crest:{t:'fan',n:8,len:15,c:'#e8964e',tip:'#141414',w:3.2},
+   col:{back:'#d8925a',mid:'#e0a070',belly:'#ecc8a8'},
+   eye:{x:14.6,y:-8,r:1.8},
+   beak:{t:'slender',x:18.2,y:-6.2,len:14,d:2.4,curve:2.6,up:'#2a2420'},
+   tail:{x:-15,y:-1,len:18,n:6,spread:.2,w:3.8,col:'#141414',col2:'#f4f2ee',band:.62},
+   wing:{arm:14,pl:22,np:7,fan:.12,pw:4,ns:6,sl:10,bars:'#f4f2ee',col:{cov:'#1a1a1a',sec:'#141414',pri:'#141414',edge:'#5a5a5a'},sh:[0,-6],fsh:[-2,-9],amp:1.15},
+   legs:{t:'tuck',col:'#5a5a5a'},
+   fact:'When threatened, females and nestlings produce a foul-smelling liquid from a gland near the tail; nestlings can even squirt droppings at intruders.'},
+ roller:{name:'Lilac-breasted Roller',short:'Roller',sci:'Coracias caudatus',group:'Featured',
+   body:{f:11,r:17,t:10,u:10.5},head:{x:12.5,y:-6.5,r:7.6},
+   col:{back:'#7a8a5a',mid:'#b88aca',belly:'#5ab8e0'},
+   patches:[E(12,-11,7,3.6,'#7ab05a',{soft:.6}),E(15.6,-5.5,3.2,2.4,'#f2f2f0',{soft:.5}),{t:'s',pts:[[17,-7],[14,-7.4],[9,-6.6]],w:1.1,c:'#1a1a1a'},
+     E(14,0,7.5,6,'#b088c8',{soft:.7}),E(4,6,12,5,'#4ab0e0',{soft:.65}),E(-6,-7,10,5,'#8a7a5a',{soft:.5})],
+   eye:{x:15,y:-7.4,r:1.8},
+   beak:{t:'cone',x:18.8,y:-6.2,len:7.5,d:4,curve:1.2,hook:.8,up:'#1a1a1a',lo:'#262626'},
+   tail:{x:-16,y:-1,len:22,n:6,spread:.16,w:3.6,col:'#3a8ad0',col2:'#1a2a5a',band:.8,streamer:12},
+   wing:{arm:14,pl:22,np:7,fan:.1,pw:3.8,ns:6,sl:9,col:{cov:'#2a6ad8',cov2:'#5ab8e0',sec:'#1f3a9a',pri:'#14246a',edge:'#8ad8ff'},sh:[0,-6],fsh:[-2,-9]},
+   legs:{t:'tuck',col:'#c8b8a0'},
+   fact:'Named for its courtship display: it climbs high, then tumbles and rolls side to side as it dives, calling harshly.'},
+ cardinal:{name:'Northern Cardinal',short:'Cardinal',sci:'Cardinalis cardinalis',group:'Featured',
+   body:{f:11,r:16,t:10,u:10.5},head:{x:12,y:-7,r:7.6},crest:{c:'#d8262e',len:11},
+   col:{back:'#d0202a',mid:'#d8262e',belly:'#c81e26'},
+   patches:[E(16,-4.6,5,4.2,'#141414',{soft:.65})],
+   eye:{x:14.8,y:-7.8,r:1.9},
+   beak:{t:'cone',x:18,y:-5.6,len:6.6,d:5.6,curve:.8,up:'#f0583a',lo:'#e04a2e'},
+   tail:{x:-15,y:-2,len:20,n:6,spread:.2,w:3.8,col:'#b81e26'},
+   wing:{arm:13,pl:20,np:6,fan:.1,pw:3.8,ns:6,sl:9,col:{cov:'#c41e26',sec:'#a81a20',pri:'#8a1a1e',edge:'#ff8a8a'},sh:[0,-6],fsh:[-2,-9]},
+   legs:{t:'tuck',col:'#a87a6a'},
+   fact:'Females sing too, often from the nest, which may tell the male to bring food.'},
 };
-const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','blackbird','greattit','bluetit','chaffinch','starling','wren','swallow','swift','magpie','woodpigeon','collareddove','mallard','muteswan','bhgull','buzzard','kestrel','booby','macaw','vulture','pitta','jay','frigate','flamingo','tern','kingfisher','toucan','beeeater','eagle'];
+const SKIN_ORDER=['robin','pigeon','sparrow','crow','gull','blackbird','greattit','bluetit','chaffinch','starling','wren','swallow','swift','magpie','woodpigeon','collareddove','mallard','muteswan','bhgull','buzzard','kestrel','booby','macaw','vulture','pitta','jay','frigate','flamingo','tern','kingfisher','toucan','beeeater','eagle','puffin','quetzal','shoebill','peafowl','snowyowl','hummingbird','hoopoe','roller','cardinal'];
 const spDef=id=>spBoxes(SPECIES[id]||SPECIES.robin);
 
 // ---------- resolution-dependent caches ----------
@@ -1255,12 +1369,12 @@ function bloomStage(st){
     x.globalCompositeOperation='lighter';x.globalAlpha=.345;x.drawImage(bB,0,0,bB.lw,bB.lh,0,0,T.lw,T.lh);x.globalAlpha=1;x.globalCompositeOperation='source-over';bEdge(T,x);bReady=T;}
 }
 // stage 0 must read the freshly rendered sky (before glow is baked into it), so it starts right after a sky refresh
-let ovG=null,ovGV=null,ovW=0,ovH=0;
-function fullOverlay(withVig){if(ovW!==cv.width||ovH!==cv.height){ovG=ovGV=null;ovW=cv.width;ovH=cv.height;}
-  if(!ovG){ovG=document.createElement('canvas');ovG.width=cv.width;ovG.height=cv.height;const g=ovG.getContext('2d');g.fillStyle=grainPat;g.fillRect(0,0,cv.width,cv.height);}
-  if(withVig&&!ovGV){ovGV=document.createElement('canvas');ovGV.width=cv.width;ovGV.height=cv.height;const g=ovGV.getContext('2d');g.imageSmoothingEnabled=true;
-    g.drawImage(vigC,0,0,cv.width,cv.height);g.drawImage(ovG,0,0);}
-  return withVig?ovGV:ovG;}
+let ovG=[],ovGV=[],ovW=0,ovH=0;
+function fullOverlay(withVig){if(ovW!==cv.width||ovH!==cv.height){ovG=[];ovGV=[];ovW=cv.width;ovH=cv.height;}const k=grainFrame();
+  if(!ovG[k]){const o=ovG[k]=document.createElement('canvas');o.width=cv.width;o.height=cv.height;const g=o.getContext('2d');g.fillStyle=grainPats[k];g.fillRect(0,0,cv.width,cv.height);}
+  if(withVig&&!ovGV[k]){const o=ovGV[k]=document.createElement('canvas');o.width=cv.width;o.height=cv.height;const g=o.getContext('2d');g.imageSmoothingEnabled=true;
+    g.drawImage(vigC,0,0,cv.width,cv.height);g.drawImage(ovG[k],0,0);}
+  return withVig?ovGV[k]:ovG[k];}
 function bloomOnSky(){if(!bA)return;if(!bReady){bloomStage(0);bloomStage(1);bloomStage(2);bNext=frame+9;}else if(bStage<0&&frame>=bNext){bloomStage(0);bStage=1;bNext=frame+9;}skyBloom();}
 function bloomTick(){if(bA&&bStage>0){bloomStage(bStage);bStage=bStage===1?2:-1;}}
 function skyBloom(){if(!bReady)return;const x=skyX;x.save();x.setTransform(S*Q.sky,0,0,S*Q.sky,0,0);x.globalCompositeOperation='lighter';
