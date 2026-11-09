@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "2.0.1",
-  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
+  "version": "2.0.2",
+  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "ed242bcee9f76d7f93be27324a22b54874d32e1480272b5a7182cea0fea44a2d",
-    "size": 221856
+    "sha256": "9ee3eff043bf88eb9b4d41da02a51aa92500d3f65ac4cb192dbcc1f9693b37f1",
+    "size": 222182
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.2",
   "versionCode": 8,
-  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
+  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
   "size": 2626988
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw.",
+  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",

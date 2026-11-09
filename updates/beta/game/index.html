@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='2.0.1';</script>
+<script>window.SKYFLAP_GAME_VERSION='2.0.2';</script>
 <script>
 (() => {
 'use strict';
@@ -1064,7 +1064,11 @@ resetBird();
 
 function startGame(){phase=set.tod==='cycle'?0:TOD[set.tod];skyAge=99;state='play';paused=false;score=0;pipes=[];pops=[];newBest=false;hsPlayed=false;deadT=0;resetBird();lastGap=H*.42;spawnPipe(W+140);flap();}
 const gapSize=()=>Math.max(134,175-score*1.1);
-function spawnPipe(x){const gap=gapSize(),min=90+gap/2,max=GY-70-gap/2;const y=clamp(lastGap+rnd(-190,190),min,max);lastGap=y;pipes.push({x,gy:y,gap,scored:false,seed:Math.random()});}
+// Next gap height: uniform over the heights reachable from the last one (no clamping -> no runs stuck at the top/bottom edge),
+// and at least 45 px away from the previous gap so consecutive pipes never line up.
+function spawnPipe(x){const gap=gapSize(),min=90+gap/2,max=GY-70-gap/2,last=clamp(lastGap,min,max),lo=Math.max(min,last-190),hi=Math.min(max,last+190);
+  let y=rnd(lo,hi);for(let k=0;k<12&&Math.abs(y-last)<45;k++)y=rnd(lo,hi);
+  lastGap=y;pipes.push({x,gy:y,gap,scored:false,seed:Math.random()});}
 function flap(){bird.vy=FLAP;bird.squash=1;sfx.flap();
   for(let i=0;i<3;i++)parts.push({t:'puff',x:bird.x-10,y:bird.y+8,vx:rnd(-120,-40),vy:rnd(0,80),life:0,max:rnd(.3,.5),s:rnd(3,6)});
   if(bird.y>GY-60)ripples.push({x:bird.x,t:0,max:1.1,s:.6});}

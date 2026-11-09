@@ -1,1 +1,1 @@
-{"version": "2.0.1", "notes": "Film grain moves again: three pre-rendered full-screen grain frames swapped 24 times per second, like real film, at the cost of a single plain draw."}
+{"version": "2.0.2", "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom."}
