@@ -1,35 +1,35 @@
 {
  "game": {
-  "version": "1.9.8",
-  "notes": "Android app 1.5.2: asks the phone for its highest screen refresh rate (Android was keeping the game at 60 Hz). Game: pre-rendered grain/vignette.",
+  "version": "2.0.0",
+  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "efe9f5de65c9f5af53a1bed402f2f59eb5625effecf613d3a3ddc73f0d7cb776",
-    "size": 210171
+    "sha256": "1e8f016758e3443d6ec7a990d98bf310a08cc0e4cd8dd9b4b0e5f8cfa0f537a2",
+    "size": 221528
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
     "size": 1229030
    },
    "calls.js": {
-    "sha256": "e5875035de1dc8bb56af6e9502536de87f0fb3cbdbe6241fd45f22af9e56fbe5",
-    "size": 1808433
+    "sha256": "4acfae450f5ad756986908f7bc8e2ecaf6de05dc132e5bcec91a60d145fd695f",
+    "size": 2317297
    }
   }
  },
  "android": {
   "version": "1.5.2",
   "versionCode": 8,
-  "notes": "Android app 1.5.2: asks the phone for its highest screen refresh rate (Android was keeping the game at 60 Hz). Game: pre-rendered grain/vignette.",
+  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
   "size": 2626988
  },
  "windows": {
   "version": "1.6.0",
-  "notes": "Android app 1.5.2: asks the phone for its highest screen refresh rate (Android was keeping the game at 60 Hz). Game: pre-rendered grain/vignette.",
+  "notes": "9 new featured birds: Atlantic Puffin, Resplendent Quetzal, Shoebill, Indian Peafowl, Snowy Owl, Ruby-throated Hummingbird, Hoopoe, Lilac-breasted Roller and Northern Cardinal - each with its own shape, calls and trivia (10 feathers each).",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",
