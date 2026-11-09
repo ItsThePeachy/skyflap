@@ -83,7 +83,7 @@
 <div id="set"><div class="panel"><div class="hd"><b>Settings</b><button class="x" id="setX" aria-label="Close">✕</button></div><div class="body" id="setB"></div><div class="ft"><span id="setS"></span><button class="rs" id="setR">Reset</button></div></div></div>
 <script src="sounds.js"></script>
 <script src="calls.js"></script>
-<script>window.SKYFLAP_GAME_VERSION='2.0.2';</script>
+<script>window.SKYFLAP_GAME_VERSION='2.0.3';</script>
 <script>
 (() => {
 'use strict';
@@ -1106,7 +1106,7 @@ function update(dt){
   time+=dt;const frozen=paused&&state==='play';
   shake*=Math.pow(.02,dt);flash=Math.max(0,flash-dt*2.5);
   if(frozen)return;
-  if(set.tod==='cycle')phase=(phase+dt/(state==='play'?22:48))%4;else phase=TOD[set.tod];
+  if(set.tod==='cycle')phase=(phase+dt/(state==='play'?22:48)/*DIAG{*/*dgTod/*}DIAG*/)%4;else phase=TOD[set.tod];
   speed=state==='dead'?0:state==='play'?165+Math.min(score,60)*1.6:105;
   scroll+=speed*dt;
   for(const c of clouds){c.x-=(speed*c.p+5)*dt;if(c.x<-420){c.x=W+rnd(40,400);c.y=rnd(30,260);c.s=rnd(.55,1.25);}}
@@ -1117,7 +1117,7 @@ function update(dt){
     const target=bird.vy<0?-.38:clamp((bird.vy-120)/520,-.38,1.35);bird.rot=lerp(bird.rot,target,1-Math.pow(.0005,dt));
     bird.wing+=dt*(bird.vy<0?32:bird.vy>380?4:12);
     if(bird.y<12){bird.y=12;bird.vy=Math.max(bird.vy,0);}
-    if(bench){const n=pipes.find(p=>p.x+PW>bird.x-12)||pipes[0],ty=n?n.gy+18:H*.45;if(bird.y>ty&&bird.vy>-60)flap();}
+    if(autoP()){const n=pipes.find(p=>p.x+PW>bird.x-12)||pipes[0],ty=n?n.gy+18:H*.45;if(bird.y>ty&&bird.vy>-60)flap();}
     for(const p of pipes)p.x-=speed*dt;
     if(pipes.length&&pipes[0].x<-PW-30)pipes.shift();
     const last=pipes[pipes.length-1];if(last.x<W-238)spawnPipe(last.x+238);
@@ -1126,9 +1126,9 @@ function update(dt){
         const hsNow=!hsPlayed&&best>0&&score===best+1;if(hsNow){hsPlayed=true;birdCall('hs',null,1);pops.push({x:W/2,y:165,s:'NEW BEST!',life:0});}
         if(score%10===0){sfx.milestone();if(!hsNow){birdCall('ten');pops.push({x:W/2,y:165,s:score+'!',life:0});}}else sfx.score();
         for(let i=0;i<10;i++){const a=rnd(0,Math.PI*2),v=rnd(40,170);parts.push({t:'spark',x:p.x+PW/2,y:p.gy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:0,max:rnd(.3,.7),s:rnd(1,2.6)});}}
-      if(!bench&&circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900)){die(false);break;}
+      if(!autoP()&&(circleRect(bird.x,bird.y,12,p.x+2,-500,PW-4,p.gy-p.gap/2+500)||circleRect(bird.x,bird.y,12,p.x+2,p.gy+p.gap/2,PW-4,900))){die(false);break;}
     }
-    if(state==='play'&&bird.y+8>GY&&!bench)die(true);
+    if(state==='play'&&bird.y+8>GY&&!autoP())die(true);
   }else if(state==='dead'){
     deadT+=dt;
     if(!bird.inWater){bird.vy=Math.min(bird.vy+GRAV*dt,1000);bird.y+=bird.vy*dt;bird.rot=lerp(bird.rot,1.3,1-Math.pow(.003,dt));if(bird.y>GY-3){bird.inWater=true;splash(bird.x);}}
@@ -1508,6 +1508,7 @@ function render(){
   if(state!=='play')drawSkinBtn();
   drawMute();
   if(set.fps)txt(fpsTxt,W/2,H-14,12,{w:600,fill:'rgba(255,255,255,.85)'});
+  /*DIAG{*/if(dg){c.fillStyle=frame&32?'#ff3b3b':'#a01818';c.beginPath();c.arc(18,H-18,6,0,7);c.fill();txt(dgAuto?`LAG TEST ${Math.round(dgAuto.t)}/92 s`:'REC',30,H-18,12,{w:700,align:'left'});}/*}DIAG*/
   if(bench){glass(W/2-140,H-92,280,52,16);txt(`Performance test ${bench.i+1}/${BENCH.length}`,W/2,H-78,14);txt(BENCH[bench.i][0],W/2,H-58,13,{w:400});}
 }
 
@@ -1525,6 +1526,7 @@ const UI=[
  {k:'cap',label:'Frame rate limit',desc:'60 keeps a 120 Hz phone cool with full graphics',type:'seg',opts:[['30','30'],['60','60'],['90','90'],['120','120'],['max','Max']]},
  {k:'fps',label:'FPS counter',type:'tog'},
  {bench:true,show:()=>!!(+set.betaUnlocked||IS_BETA_WEB)},
+ /*DIAG{*/{diag:true,show:()=>!!(+set.betaUnlocked||IS_BETA_WEB)},/*}DIAG*/
  {sec:'Lighting'},
  {k:'vol',label:'Volumetric light',tag:'medium',desc:'Sun beams blocked by pipes, clouds, mountains and the bird',type:'tog'},
  {k:'rays',label:'Stylised sun rays',tag:'light',desc:'Painted rays in the sky behind everything',type:'tog'},
@@ -1566,6 +1568,10 @@ function buildSettings(){
     if(it.bench){let r=[];try{r=JSON.parse(localStorage.getItem('skyflap_bench')||'[]');}catch(e){}
       h+=`<div class="row col"><div><div class="lbl">Performance test</div><div class="desc">Auto-plays ~50 s at High in a sunset scene, switching one effect off at a time, and measures FPS (frame limit is ignored during the test).</div></div><div class="btnrow"><button id="benchGo">Run test</button></div>`+
         (r.length?`<div class="desc" style="line-height:1.55;margin-top:6px;font-variant-numeric:tabular-nums">${r.map(x=>`${x.l}: <b>${x.fps}</b> fps <span style="opacity:.7">(1% low ${x.low})</span>`).join('<br>')}<br><span style="opacity:.7">${r[0].res||''}</span></div>`:'')+`</div>`;continue;}
+    /*DIAG{*/if(it.diag){let ls=null;try{ls=JSON.parse(localStorage.getItem('skyflap_diag_sum')||'null');}catch(e){}const rec=dg&&dg.mode==='play';
+      h+=`<div class="row col"><div><div class="lbl">Lag diagnostic <span class="tag l">TEST</span></div><div class="desc">Records every frame (timing, what the game was doing, memory, browser long-frame reports${window.skyflapDesktop?', CPU/GPU process load':''}) and saves it as a .json file you can send for review. <b>Run lag test</b> auto-plays ~90 s with your own settings and frame limit (second half runs a full day/night cycle). <b>Record my play</b> records while you play normally – come back here to stop and save.</div></div>
+        <div class="btnrow"><button id="dgAuto">Run lag test</button><button id="dgRec">${rec?'Stop recording':'Record my play'}</button>${dgLast?'<button id="dgSave">Save file</button>':''}</div>`+
+        (ls&&ls.st?`<div class="desc" style="line-height:1.55;margin-top:6px;font-variant-numeric:tabular-nums">Last ${ls.mode==='auto'?'test':'recording'} (${ls.when}): ${ls.st.frames} frames, avg <b>${ls.st.fpsAvg}</b> fps, typical frame ${ls.st.p50} ms, worst ${ls.st.max} ms, <b>${ls.st.hitches}</b> hitches (${ls.st.cpu} game-code, ${ls.st.notCpu} GPU/system)${dgLast&&dgLast.saved?'<br>Saved: '+String(dgLast.saved).replace(/[<>&]/g,''):''}</div>`:'')+`</div>`;continue;}/*}DIAG*/
     if(it.credits){h+=`<div class="desc" style="line-height:1.5;padding:4px 0 8px">Sounds are CC0 / public domain unless noted. Forest birds by kvgarlic, wind by felix.blume, brook by gluckose (Freesound, edited by Porrumentzio for Blanket); crickets by Lisa Redfern (SoundBible); wing flaps from RPG Audio by Kenney; pipe thunk &amp; swish from Organic Wooshes by Ben Burnes; water splash: custom sound supplied by the player. Bird calls are original synthesised recreations of each species' real calls.</div>`;continue;}
     const v=String(getV(it.k)),tag=it.tag?`<span class="tag${it.tag==='light'?' l':''}">${it.tag.toUpperCase()}</span>`:'',d=it.desc?`<div class="desc">${it.desc}</div>`:'';
     if(it.type==='tog')h+=`<div class="row" data-k="${it.k}"><div><div class="lbl">${it.label}${tag}</div>${d}</div><div class="sw${+v?' on':''}"></div></div>`;
@@ -1592,6 +1598,9 @@ let verTaps=0,verT=0;
 setB.addEventListener('click',e=>{
   if(e.target.closest&&e.target.closest('#updVer')&&!+set.betaUnlocked){const n=performance.now();verTaps=n-verT<900?verTaps+1:1;verT=n;if(verTaps>=7){set.betaUnlocked=1;saveSet();buildSettings();}return;}
   if(e.target.id==='benchGo'){closeSettings();startBench();return;}
+  /*DIAG{*/if(e.target.id==='dgAuto'){if(dg)dgStop();closeSettings();dgRunAuto();return;}
+  if(e.target.id==='dgRec'){if(dg&&dg.mode==='play'){dgStop();dgSave();buildSettings();}else{if(dg)dgStop();dgStart('play');closeSettings();}return;}
+  if(e.target.id==='dgSave'){dgSave();return;}/*}DIAG*/
   if(e.target.id==='updChk'){updCheck(false);return;}if(e.target.id==='updRst'){host.restart();return;}if(e.target.id==='updIns'){host.install();return;}const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;
   if(b.dataset.v!==undefined)changeSetting(k,b.dataset.v);else changeSetting(k,getV(k)?0:1);});
 function openSettings(){ensureAudio();if(state==='play')paused=true;setOpen=true;buildSettings();setEl.classList.add('open');}
@@ -1703,7 +1712,7 @@ let lastR=-1e9;
 // ---------- on-device performance test: auto-pilot, one effect off at a time ----------
 const BENCH=[['High (all on)',{}],['without Volumetric light',{vol:0}],['without Bloom',{bloom:0}],['without Film grain',{grain:0}],['without Vignette',{vignette:0}],
   ['without Lens flare',{flare:0}],['without Clouds',{clouds:0}],['without Dust & fireflies',{motes:0}],['Water reflections Low',{refl:'1'}],['Water reflections Off',{refl:'0'}],['0.75x resolution',{res:'s0.75'}]];
-let bench=null;
+let bench=null;const autoP=()=>!!bench/*DIAG{*/||!!dgAuto/*}DIAG*/;
 function startBench(){bench={i:-1,saved:JSON.stringify(set),muted,out:[]};muted=true;applyVolumes();startGame();nextBench();}
 function nextBench(){bench.i++;if(bench.i>=BENCH.length){endBench();return;}
   set=Object.assign(JSON.parse(bench.saved),PRESETS.high,BENCH[bench.i][1],{cap:'max',tod:'sunset'});phase=TOD.sunset;resize();skyAge=99;bench.t=0;bench.ft=[];}
@@ -1712,14 +1721,79 @@ function benchTick(raw){if(!bench||raw<=0||raw>.5)return;bench.t+=raw;if(bench.t
     bench.out.push({l:BENCH[bench.i][0],fps:Math.round(1/avg),low:Math.round(1/low),res:`Rendering ${cv.width}×${cv.height}`});nextBench();}}
 function endBench(){const out=bench.out;set=JSON.parse(bench.saved);muted=bench.muted;bench=null;applyVolumes();resize();skyAge=99;state='menu';resetBird();pipes=[];
   try{localStorage.setItem('skyflap_bench',JSON.stringify(out));}catch(e){}openSettings();}
+/*DIAG{*/
+// ---------- TEST BUILD ONLY: lag diagnostic recorder (stripped from stable builds by publish.py) ----------
+let dg=null,dgTod=1,dgLast=null;const DG_COMMON=/^(render|update|layer\d|volLight|drawWater|fullOverlay|lensFlare|drawMotes|drawClouds|bloomOnSky|skyBloom|bloom[12]|ambUpdate|updRender)$/;const dgJobs={};
+function dgWrap(){
+  const W=(name,get,setf,lab)=>{const o=get();setf(function(...a){if(!dg)return o.apply(this,a);const t=performance.now();const r=o.apply(this,a);const d=performance.now()-t;
+      const n=lab?lab(a,r):name;if(n){if(d>=1||!DG_COMMON.test(n))dg.fj.push(n,+d.toFixed(2));const j=dgJobs[n]||(dgJobs[n]={n:0,ms:0,max:0});j.n++;j.ms+=d;if(d>j.max)j.max=d;}return r;});};
+  W('renderSky',()=>renderSky,f=>renderSky=f);W('bloom',()=>bloomStage,f=>bloomStage=f,a=>'bloom'+a[0]);W('paintInto',()=>paintInto,f=>paintInto=f,a=>'paint:L'+LAYERS.indexOf(a[0]));
+  W('volLight',()=>volLight,f=>volLight=f);W('prebuildSrc',()=>prebuildSrc,f=>prebuildSrc=f);W('drawWater',()=>drawWater,f=>drawWater=f);
+  W('drawLayer',()=>drawLayer,f=>drawLayer=f,a=>'layer'+LAYERS.indexOf(a[1]));W('update',()=>update,f=>update=f);W('render',()=>render,f=>render=f);
+  W('fullOverlay',()=>fullOverlay,f=>fullOverlay=f);W('layerCanvas',()=>layerCanvas,f=>layerCanvas=f,a=>a[1]?null:'newLayerCanvas');
+  W('loadCalls',()=>loadCalls,f=>loadCalls=f);W('decodeB64',()=>decodeB64,f=>decodeB64=f);W('birdCall',()=>birdCall,f=>birdCall=f);W('play',()=>play,f=>play=f,a=>'snd:'+a[0]);
+  W('mk',()=>mk,f=>mk=f,a=>'mk:'+Math.round(a[0])+'x'+Math.round(a[1]));W('tsprite',()=>tsprite,f=>tsprite=f,(a,r)=>r&&r._dgSeen?null:(r&&(r._dgSeen=1),'newText:'+String(a[0]).slice(0,12)+'@'+a[1]));W('nz',()=>nz,f=>nz=f);W('resize',()=>resize,f=>resize=f);W('spawnPipe',()=>spawnPipe,f=>spawnPipe=f);W('ambUpdate',()=>ambUpdate,f=>ambUpdate=f);W('updRender',()=>updRender,f=>updRender=f);
+  W('bloomOnSky',()=>bloomOnSky,f=>bloomOnSky=f);W('skyBloom',()=>skyBloom,f=>skyBloom=f);W('lensFlare',()=>lensFlare,f=>lensFlare=f);W('drawMotes',()=>drawMotes,f=>drawMotes=f);W('drawClouds',()=>drawClouds,f=>drawClouds=f);
+  const ce=document.createElement.bind(document);document.createElement=function(t,...a){const e=ce(t,...a);if(dg&&String(t).toLowerCase()==='canvas')dg.fj.push('createCanvas',0);return e;};
+}
+function dgGpu(){try{const c=document.createElement('canvas'),g=c.getContext('webgl')||c.getContext('experimental-webgl');const e=g&&g.getExtension('WEBGL_debug_renderer_info');
+  return g?{vendor:g.getParameter(e?e.UNMASKED_VENDOR_WEBGL:g.VENDOR),renderer:g.getParameter(e?e.UNMASKED_RENDERER_WEBGL:g.RENDERER)}:null;}catch(e){return String(e);}}
+function dgEnv(){const m=performance.memory;let ctxAttr=null;try{ctxAttr=ctx.getContextAttributes&&ctx.getContextAttributes();}catch(e){}
+  return {game:window.SKYFLAP_GAME_VERSION,app:(updState&&updState.appVersion)||null,channel:set.channel,pwa:IS_PWA,desktop:!!window.skyflapDesktop,ua:navigator.userAgent,
+    cores:navigator.hardwareConcurrency,memGB:navigator.deviceMemory,dpr:devicePixelRatio,screen:[screen.width,screen.height],avail:[screen.availWidth,screen.availHeight],win:[innerWidth,innerHeight],
+    canvas:[cv.width,cv.height],logical:[W,H],S,DPR,ctxAttr,gpu:dgGpu(),dsk,quality:Object.assign({},Q),settings:Object.assign({},set),
+    audio:ac?{state:ac.state,rate:ac.sampleRate,base:ac.baseLatency,out:ac.outputLatency}:null,heapLimitMB:m?Math.round(m.jsHeapSizeLimit/1048576):null,started:new Date().toISOString()};}
+function dgStart(mode){if(!dgWrap.done){dgWrap();dgWrap.done=1;}for(const k in dgJobs)delete dgJobs[k];
+  dg={mode,t0:performance.now(),env:dgEnv(),fr:[],raf:[],ev:[],loaf:[],lt:[],host:[],fj:[],seg:'',inp:0,obs:[]};
+  const add=(type,fn)=>{try{const o=new PerformanceObserver(l=>{if(dg)for(const e of l.getEntries())fn(e);});o.observe({type,buffered:false});dg.obs.push(o);}catch(e){dg.ev.push([0,'noObserver:'+type]);}};
+  add('long-animation-frame',e=>dg.loaf.push({t:+(e.startTime-dg.t0).toFixed(1),dur:+e.duration.toFixed(1),block:+(e.blockingDuration||0).toFixed(1),render:+((e.renderStart||0)-e.startTime).toFixed(1),
+    style:+((e.styleAndLayoutStart||0)-e.startTime).toFixed(1),scripts:(e.scripts||[]).slice(0,6).map(s=>({inv:s.invoker,fn:s.sourceFunctionName,dur:+s.duration.toFixed(1),forced:+(s.forcedStyleAndLayoutDuration||0).toFixed(1)}))}));
+  add('longtask',e=>dg.lt.push([+(e.startTime-dg.t0).toFixed(1),+e.duration.toFixed(1)]));
+  dgEvt('start '+mode);
+  if(window.skyflapDesktop&&window.skyflapDesktop.diag){const poll=()=>{if(!dg)return;window.skyflapDesktop.diag.metrics().then(m=>{if(dg){dg.host.push([+(performance.now()-dg.t0).toFixed(0),m]);setTimeout(poll,1000);}}).catch(e=>{if(dg)dg.ev.push([0,'metricsErr '+e]);});};
+    window.skyflapDesktop.diag.info().then(i=>{if(dg)dg.env.electron=i;}).catch(()=>{});poll();}}
+function dgEvt(s){if(dg)dg.ev.push([+(performance.now()-dg.t0).toFixed(1),s]);}
+for(const [t,n] of [[document,'visibilitychange'],[window,'blur'],[window,'focus'],[window,'resize']])t.addEventListener(n,()=>dgEvt(n+(n==='visibilitychange'?':'+document.visibilityState:n==='resize'?':'+innerWidth+'x'+innerHeight:'')));
+for(const n of ['pointerdown','keydown','touchstart'])window.addEventListener(n,()=>{if(dg)dg.inp++;},{passive:true,capture:true});
+// one record per rAF callback: [t, interval since previous rAF, rendered?, work ms, heap MB, state flags, jobs]
+function dgFrame(now,interval,rendered,work){if(!dg)return;const m=performance.memory;let riv=0;if(rendered){riv=dg.lr?now-dg.lr:0;dg.lr=now;}
+  dg.fr.push([+(now-dg.t0).toFixed(2),+interval.toFixed(2),rendered?+riv.toFixed(2):0,+work.toFixed(2),m?+(m.usedJSHeapSize/1048576).toFixed(2):0,state[0]+(paused?'p':'')+(setOpen?'s':'')+(dg.inp?'i':''),+phase.toFixed(3),score,dg.fj.length?dg.fj.join(' '):'']);
+  dg.fj=[];dg.inp=0;if(dg.mode==='play'&&dg.fr.length>40000)dg.fr.splice(0,5000);}
+function dgStats(){const R=dg.fr.filter(f=>f[2]>0),iv=R.map(f=>f[2]).filter(x=>x>0&&x<1000).sort((a,b)=>a-b);const q=p=>iv.length?iv[Math.min(iv.length-1,Math.floor(iv.length*p))]:0;
+  const med=q(.5),hitch=R.filter(f=>f[2]>Math.max(med*1.7,med+6));const gc=[];for(let i=1;i<dg.fr.length;i++){const d=dg.fr[i][4]-dg.fr[i-1][4];if(d<-1)gc.push([dg.fr[i][0],+d.toFixed(1)]);}
+  const cpu=hitch.filter(f=>f[3]>med*.8).length;const near=t=>dg.loaf.filter(l=>Math.abs(l.t+l.dur-t)<l.dur+20).map(l=>l.dur+'ms/'+l.block).join(',');
+  const jobs={};for(const k in dgJobs){const j=dgJobs[k];jobs[k]={n:j.n,avg:+(j.ms/j.n).toFixed(2),max:+j.max.toFixed(1)};}
+  return {frames:R.length,rafs:dg.fr.length,secs:+((performance.now()-dg.t0)/1000).toFixed(1),fpsAvg:+(1000*R.length/Math.max(1,(R.length&&R[R.length-1][0]-R[0][0]))).toFixed(1),
+    interval:{p50:med,p90:q(.9),p99:q(.99),p999:q(.999),max:iv[iv.length-1]||0},hitches:hitch.length,hitchesCpuBound:cpu,hitchesNotCpu:hitch.length-cpu,gcDrops:gc.length,loaf:dg.loaf.length,longtasks:dg.lt.length,
+    worst:hitch.slice().sort((a,b)=>b[2]-a[2]).slice(0,40).map(f=>({t:f[0],iv:f[2],raf:f[1],work:f[3],heap:f[4],jobs:f[8],loaf:near(f[0])})),gc:gc.slice(0,200),jobs};}
+function dgStop(){if(!dg)return null;dgEvt('stop');for(const o of dg.obs)try{o.disconnect();}catch(e){}const d=dg;let st={};try{st=dgStats();}catch(e){st={err:String(e)};}
+  const out={kind:'skyflap-lag-diagnostic',format:1,mode:d.mode,env:d.env,summary:st,events:d.ev,loaf:d.loaf,longtasks:d.lt,host:d.host,
+    frameCols:['t','rafInterval','renderedInterval(0=skipped by limiter)','workMs','heapMB','state','phase','score','jobs(name ms ...)'],frames:d.fr};
+  dg=null;dgTod=1;dgLast={when:new Date().toLocaleTimeString(),st,json:JSON.stringify(out)};
+  try{localStorage.setItem('skyflap_diag_sum',JSON.stringify({when:dgLast.when,mode:d.mode,st:{frames:st.frames,fpsAvg:st.fpsAvg,hitches:st.hitches,cpu:st.hitchesCpuBound,notCpu:st.hitchesNotCpu,max:st.interval&&st.interval.max,p50:st.interval&&st.interval.p50}}));}catch(e){}
+  return dgLast;}
+function dgSave(){if(!dgLast)return;const name=`skyflap-diag-${window.SKYFLAP_GAME_VERSION}-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+  const D=window.skyflapDesktop;if(D&&D.diag&&D.diag.save){D.diag.save(name,dgLast.json).then(p=>{if(p){dgLast.saved=p;if(setOpen)buildSettings();}}).catch(()=>dgDownload(name));return;}dgDownload(name);}
+function dgDownload(name){const blob=new Blob([dgLast.json],{type:'application/json'});
+  try{const f=new File([blob],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})&&!window.skyflapDesktop){navigator.share({files:[f],title:name}).catch(()=>{});return;}}catch(e){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);dgLast.saved=name;if(setOpen)buildSettings();}
+// automatic run: ~90 s auto-pilot with YOUR settings and frame limit; second half runs the day/night cycle at 2x so every sky transition is hit
+let dgAuto=null;
+function dgRunAuto(){dgAuto={saved:JSON.stringify(set),t:0,seg:0};startGame();dgStart('auto');dgEvt('segment A: your settings, time of day as set');}
+function dgAutoTick(raw){if(!dgAuto||raw<=0||raw>1)return;dgAuto.t+=raw;
+  if(dgAuto.seg===0&&dgAuto.t>45){dgAuto.seg=1;set.tod='cycle';dgTod=2;dgEvt('segment B: full day/night cycle at 2x');}
+  if(dgAuto.t>92){set=JSON.parse(dgAuto.saved);dgAuto=null;phase=set.tod==='cycle'?phase:TOD[set.tod];dgStop();state='menu';resetBird();pipes=[];openSettings();}}
+/*}DIAG*/
 function loop(now){
   requestAnimationFrame(loop);
-  const cap=set.cap==='max'?0:+set.cap;if(cap){const iv=1000/cap;if(now-lastR<iv-1.5)return;lastR=now-lastR>iv*2?now:lastR+iv;}
+  /*DIAG{*/const dgI=now-(loop.p||now);loop.p=now;const dgW=performance.now();/*}DIAG*/
+  const cap=set.cap==='max'?0:+set.cap;if(cap){const iv=1000/cap;if(now-lastR<iv-1.5){/*DIAG{*/dgFrame(now,dgI,0,0);/*}DIAG*/return;}lastR=now-lastR>iv*2?now:lastR+iv;}
   const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,1/30);
-  benchTick(raw);update(dt);render();
+  benchTick(raw);/*DIAG{*/dgAutoTick(raw);/*}DIAG*/update(dt);render();
   if(ac&&(frame&7)===0)ambUpdate();
   if(host&&(frame&15)===0)updRender();
   fpsN++;fpsT+=raw;if(fpsT>=.5){fpsVal=Math.round(fpsN/fpsT);fpsTxt=fpsVal+' FPS';fpsN=0;fpsT=0;if(setOpen)updateStatus();}
+  /*DIAG{*/dgFrame(now,dgI,1,performance.now()-dgW);/*}DIAG*/
 }
 requestAnimationFrame(loop);
 })();

@@ -1,13 +1,13 @@
 {
  "game": {
-  "version": "2.0.2",
-  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
+  "version": "2.0.3",
+  "notes": "Test: lag diagnostic (Settings > Lag diagnostic) records frame timings and saves a file to send for review",
   "minAndroid": 6,
   "minWindows": "1.5.0",
   "files": {
    "index.html": {
-    "sha256": "9ee3eff043bf88eb9b4d41da02a51aa92500d3f65ac4cb192dbcc1f9693b37f1",
-    "size": 222182
+    "sha256": "9411f36c84f81e46743d1b7ad7dded58977e95b0797ade85b31bd93e2ef1e5ae",
+    "size": 233964
    },
    "sounds.js": {
     "sha256": "3a6fb9a05b4b48c95e3e12ec80921894e112fe15ebe5cce10de988d5a69b4887",
@@ -22,14 +22,14 @@
  "android": {
   "version": "1.5.2",
   "versionCode": 8,
-  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
+  "notes": "Test: lag diagnostic (Settings > Lag diagnostic) records frame timings and saves a file to send for review",
   "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/android/Skyflap.apk",
   "sha256": "4f842ce8d5f9d65bd09568183ae5b68716e1122c466d99bbf82ccf33980061d8",
   "size": 2626988
  },
  "windows": {
-  "version": "1.6.0",
-  "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom.",
+  "version": "1.6.1",
+  "notes": "Test: lag diagnostic (Settings > Lag diagnostic) records frame timings and saves a file to send for review",
   "asar": {
    "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/app.asar",
    "sha256": "c554f0ac8208a0a92b9833eb93c3174c19ed5c77926646e19a49c41084a9399c",
@@ -40,13 +40,13 @@
    "files": {
     "main.js": {
      "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/code/main.js",
-     "sha256": "63e1882381c3c8e403124f9376d2e23bff047619f526daddce4a33eac658299f",
-     "size": 11317
+     "sha256": "c163dc253d62386994ccc771d86962159bd1f9cae2df9d9a75bed58776873f9e",
+     "size": 12962
     },
     "preload.js": {
      "url": "https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates/beta/windows/code/preload.js",
-     "sha256": "ee3c4e628ef2925e2b5ffe4e8f63e6eb0ceb5aafd98bbd44b1f6c3a433453aa3",
-     "size": 579
+     "sha256": "0517154ec0f2610d68d2bf2958f2fce4ba08805fb28adfb5660f2633bad04d51",
+     "size": 754
     }
    }
   },

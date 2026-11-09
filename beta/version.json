@@ -1,1 +1,1 @@
-{"version": "2.0.2", "notes": "Pipe heights are now varied: every pipe is at least 45 px higher or lower than the last, and they no longer get stuck in long runs at the top or bottom."}
+{"version": "2.0.3", "notes": "Test: lag diagnostic (Settings > Lag diagnostic) records frame timings and saves a file to send for review"}

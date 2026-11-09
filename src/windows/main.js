@@ -172,6 +172,22 @@ ipcMain.handle('sd:set', (e, o) => {
   return info();
 });
 
+/*DIAG{*/
+// TEST BUILD ONLY: lag diagnostic helpers (stripped from stable builds)
+{ const { dialog } = require('electron');
+  ipcMain.handle('dg:metrics', () => app.getAppMetrics().map(m => ({ type: m.type, name: m.name || m.serviceName || '', cpu: +m.cpu.percentCPUUsage.toFixed(1), wake: m.cpu.idleWakeupsPerSecond, memMB: Math.round(((m.memory && m.memory.workingSetSize) || 0) / 1024) })));
+  ipcMain.handle('dg:info', async () => {
+    let gpu = null; try { gpu = await app.getGPUInfo('basic'); } catch (e) { gpu = String(e); }
+    return { versions: process.versions, appVersion: APPVER, gpuStatus: app.getGPUFeatureStatus(), gpu, os: [os.platform(), os.release(), os.arch()], cpu: (os.cpus()[0] || {}).model, cpuCount: os.cpus().length, memGB: +(os.totalmem() / 1073741824).toFixed(1),
+      displays: screen.getAllDisplays().map(d => ({ size: d.size, scale: d.scaleFactor, hz: d.displayFrequency, primary: d.id === screen.getPrimaryDisplay().id })),
+      window: win ? { bounds: win.getBounds(), fullscreen: win.isFullScreen(), focused: win.isFocused() } : null, onBattery: (() => { try { return require('electron').powerMonitor.isOnBatteryPower(); } catch (e) { return null; } })() };
+  });
+  ipcMain.handle('dg:save', async (e, name, data) => {
+    const r = await dialog.showSaveDialog(win, { title: 'Save lag diagnostic', defaultPath: path.join(app.getPath('downloads'), String(name).replace(/[^\w.\-]/g, '_')), filters: [{ name: 'JSON', extensions: ['json'] }] });
+    if (r.canceled || !r.filePath) return null; fs.writeFileSync(r.filePath, String(data)); shell.showItemInFolder(r.filePath); return r.filePath;
+  });
+}
+/*}DIAG*/
 app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
 app.whenReady().then(() => { loadCfg(); createWindow(); });
 app.on('window-all-closed', () => app.quit());

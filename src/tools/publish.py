@@ -6,11 +6,16 @@ RAW='https://raw.githubusercontent.com/ItsThePeachy/skyflap/main/updates'+('/bet
 u=os.path.join(R,'updates','beta') if BETA else os.path.join(R,'updates');os.makedirs(u+'/game',exist_ok=True);os.makedirs(u+'/android',exist_ok=True);os.makedirs(u+'/windows',exist_ok=True)
 def put(src,dst):
     shutil.copy(src,os.path.join(u,dst));b=open(src,'rb').read();return {'sha256':hashlib.sha256(b).hexdigest(),'size':len(b)}
-html=open('/home/claude/skyflap.html',encoding='utf8').read();GV=re.search(r"SKYFLAP_GAME_VERSION='([^']+)'",html).group(1)
-files={'index.html':put('/home/claude/skyflap.html','game/index.html'),'sounds.js':put('/home/claude/sounds.js','game/sounds.js'),'calls.js':put('/home/claude/calls.js','game/calls.js')}
+SRC='/home/claude/skyflap.html'
+if not BETA:   # test-only diagnostics never ship in stable
+    subprocess.run(['python3','/home/claude/strip_diag.py',SRC,'/tmp/pub_stable.html'],check=True);SRC='/tmp/pub_stable.html'
+    for n in ('main.js','preload.js'): subprocess.run(['python3','/home/claude/strip_diag.py','/home/claude/exe/stage/'+n,'/tmp/pub_'+n],check=True)
+CODE=(lambda n:'/home/claude/exe/stage/'+n) if BETA else (lambda n:'/tmp/pub_'+n)
+html=open(SRC,encoding='utf8').read();GV=re.search(r"SKYFLAP_GAME_VERSION='([^']+)'",html).group(1)
+files={'index.html':put(SRC,'game/index.html'),'sounds.js':put('/home/claude/sounds.js','game/sounds.js'),'calls.js':put('/home/claude/calls.js','game/calls.js')}
 apk=put('/home/claude/Skyflap.apk','android/Skyflap.apk');asar=put('/home/claude/exe/dist/Skyflap/resources/app.asar','windows/app.asar')
 os.makedirs(u+'/windows/code',exist_ok=True)
-code={n:dict(url=RAW+'/windows/code/'+n,**put('/home/claude/exe/stage/'+n,'windows/code/'+n)) for n in ('main.js','preload.js')}
+code={n:dict(url=RAW+'/windows/code/'+n,**put(CODE(n),'windows/code/'+n)) for n in ('main.js','preload.js')}
 m={'game':{'version':GV,'notes':NOTES,'minAndroid':6,'minWindows':'1.5.0','files':files},
    'android':dict(version=AV,versionCode=AC,notes=NOTES,url=RAW+'/android/Skyflap.apk',**apk),
    'windows':{'version':WV,'notes':NOTES,'asar':dict(url=RAW+'/windows/app.asar',**asar),'code':{'minElectron':'0','files':code},'page':'https://github.com/ItsThePeachy/skyflap'}}

@@ -3,7 +3,7 @@
 set -e
 BASE="$1"; P=/home/claude/apk/proj; AJ=/usr/lib/android-sdk/platforms/android-23/android.jar
 GV=$(grep -o "SKYFLAP_GAME_VERSION='[^']*'" /home/claude/skyflap.html | head -1 | cut -d"'" -f2)
-cd $P && cp /home/claude/skyflap.html assets/index.html && cp /home/claude/sounds.js assets/sounds.js
+cd $P && cp /home/claude/skyflap.html assets/index.html && { [ "$CHANNEL" = "beta" ] || python3 /home/claude/strip_diag.py assets/index.html assets/index.html; } && cp /home/claude/sounds.js assets/sounds.js && cp /home/claude/calls.js assets/calls.js
 rm -rf build && mkdir -p build/classes build/gen build/src/com/skyflap/game
 for f in src/com/skyflap/game/*.java; do sed "s#__UPDATE_BASE__#$BASE#; s#__GAME_VERSION__#$GV#" "$f" > build/src/com/skyflap/game/$(basename $f); done
 aapt package -f -m -J build/gen -M AndroidManifest.xml -S res -I $AJ >/dev/null

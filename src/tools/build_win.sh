@@ -5,6 +5,8 @@ BASE="$1"; AV="$2"; E=/home/claude/exe
 cd $E && rm -rf stage && cp -r appsrc stage
 cp /home/claude/skyflap.html stage/index.html && cp /home/claude/sounds.js stage/sounds.js && cp /home/claude/calls.js stage/calls.js
 sed -i "s#'__UPDATE_BASE__'#'$BASE'#" stage/main.js
+# test-only diagnostics never ship in stable builds
+if [ "$CHANNEL" != "beta" ]; then for f in index.html main.js preload.js; do python3 /home/claude/strip_diag.py stage/$f stage/$f; done; fi
 python3 - "$AV" <<'PY'
 import json,sys;p='/home/claude/exe/stage/package.json';d=json.load(open(p));d['version']=sys.argv[1];json.dump(d,open(p,'w'),indent=2)
 PY
