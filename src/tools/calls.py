@@ -545,6 +545,132 @@ def kestrel(ev):     # shrill rapid 'kee-kee-kee', trilling whinny
 SP.update(blackbird=blackbird, greattit=greattit, bluetit=bluetit, chaffinch=chaffinch, starling=starling, wren=wren, swallow=swallow, swift=swift, magpie=magpie,
           woodpigeon=woodpigeon, collareddove=collareddove, mallard=mallard, muteswan=muteswan, bhgull=bhgull, buzzard=buzzard, kestrel=kestrel)
 
+# ------------------------------------------------------------------ featured birds (batch 2)
+def puffin(ev):      # low groaning 'arr-arr-arr' purr, like a distant chainsaw
+    s = Seq(3)
+    groan = lambda d, f: voice(d, [(0, f), (.5, f * 1.15), (1, f * .85)], tilt=.8, jit=.06, am=(rng.uniform(22, 28), .85), noise=.25, nb=(150, 2000),
+                               formants=[(500, 400, 1), (1100, 600, .6)], a=.03, r=.08)
+    if ev == 'hs':
+        t = 0
+        for i in range(4): s.add(t, groan(rng.uniform(.3, .4), 170 * J(.08))); t += rng.uniform(.38, .46)
+        return s.done(.2)
+    if ev == 'ten':
+        s.add(0, groan(.35, 180 * J())); return s.done(.2)
+    s.add(0, groan(.6, 210 * J())); s.add(.2, wings(.4, 8, 400, 3500), .6); return s.done(.18)
+
+def quetzal(ev):     # mellow whistled 'wee-oo' pairs, cackling alarm
+    s = Seq(3)
+    weeoo = lambda f: voice(.42, [(0, f), (.35, f * 1.18), (1, f * .82)], harm=(1, .25, .06), vib=(5, .015), a=.03, r=.1)
+    if ev == 'hs':
+        t = 0; f = 1700 * J()
+        for i in range(4): s.add(t, weeoo(f * (1 - i * .03))); t += .5
+        return s.done(.3, .2)
+    if ev == 'ten':
+        s.add(0, weeoo(1700 * J())); return s.done(.3, .2)
+    t = 0
+    for i in range(6): s.add(t, voice(.07, [(0, 2200 * J()), (1, 1800)], tilt=1.1, nh=10, jit=.05, noise=.3, a=.005, r=.03)); t += .09
+    return s.done(.25, .2)
+
+def shoebill(ev):    # machine-gun bill clattering, low mooing hum
+    s = Seq(3)
+    def clatter(d, rate):
+        n = int(d * SR); y = np.zeros(n); t = 0
+        while t < d - .02:
+            c = noiseb(.014, 400, 3500, .0006, .01); a = int(t * SR); e = min(n, a + len(c)); y[a:e] += c[:e - a] * rng.uniform(.6, 1); t += 1 / rate * J(.1)
+        return y * env(n, .02, .1)
+    if ev == 'hs':
+        s.add(0, clatter(1.4, rng.uniform(16, 20))); return s.done(.25)
+    if ev == 'ten':
+        s.add(0, clatter(.45, 18)); return s.done(.22)
+    s.add(0, voice(.6, [(0, 140 * J()), (1, 110)], harm=(1, .5, .25), noise=.2, nb=(80, 800), a=.05, r=.15), .8); s.add(.1, clatter(.4, 22), .7); return s.done(.2)
+
+def peafowl(ev):     # loud 'may-AWE' scream, honking alarm 'ka-aan'
+    s = Seq(3)
+    scream = lambda d, f: voice(d, [(0, f * .8), (.3, f * 1.25), (1, f * .9)], tilt=.8, jit=.04, noise=.2, nb=(500, 5000),
+                                formants=[(1300, 800, 1), (2600, 1000, .6)], a=.02, r=.1)
+    if ev == 'hs':
+        f = 900 * J(); s.add(0, voice(.18, [(0, f * .7), (1, f * .9)], tilt=.8, jit=.04, formants=[(1100, 700, 1)], a=.01, r=.05)); s.add(.2, scream(.55, f))
+        s.add(.95, scream(.5, f * .97)); return s.done(.3)
+    if ev == 'ten':
+        s.add(0, scream(.42, 950 * J())); return s.done(.3)
+    t = 0
+    for i in range(4): s.add(t, voice(.14, [(0, 750 * J()), (1, 600)], tilt=.8, jit=.05, noise=.25, formants=[(1000, 700, 1), (2200, 900, .5)], a=.01, r=.05)); t += .2
+    return s.done(.25)
+
+def snowyowl(ev):    # deep booming 'hoo hoo', harsh barking 'krek', bill snap
+    s = Seq(3)
+    hoo = lambda d, f: voice(d, [(0, f * .95), (.3, f), (1, f * .9)], harm=(1, .35, .1), noise=.08, nb=(100, 900), a=.05, r=.12)
+    if ev == 'hs':
+        f = 300 * J()
+        for i in range(4): s.add(i * .5, hoo(.36, f))
+        return s.done(.35)
+    if ev == 'ten':
+        f = 300 * J(); s.add(0, hoo(.3, f)); s.add(.42, hoo(.3, f)); return s.done(.32)
+    s.add(0, click(2500, .02)); s.add(.06, click(2300, .02), .8)
+    t = .18
+    for i in range(3): s.add(t, voice(.12, [(0, 1300 * J()), (1, 1000)], tilt=.9, jit=.06, noise=.4, nb=(600, 5000), formants=[(1500, 900, 1)], a=.005, r=.05)); t += .17
+    return s.done(.25)
+
+def hummingbird(ev): # high squeaky 'tchip' chatter over a wing hum
+    s = Seq(3)
+    def hum(d):
+        n = int(d * SR); t = np.arange(n) / SR; y = bp(rng.standard_normal(n), 120, 600) * (.6 + .4 * np.sin(2 * np.pi * 52 * t)); return y / (np.max(np.abs(y)) + 1e-9) * env(n, .05, .1)
+    tch = lambda f: voice(.035, [(0, f * 1.2), (1, f * .85)], harm=(1, .2), a=.002, r=.015)
+    if ev == 'hs':
+        s.add(0, hum(1.3), .45); t = .05
+        for i in range(rng.integers(12, 16)): s.add(t, tch(rng.uniform(5000, 7500)), rng.uniform(.6, 1)); t += rng.uniform(.06, .1)
+        return s.done(.2)
+    if ev == 'ten':
+        s.add(0, hum(.5), .4)
+        for i in range(3): s.add(.05 + i * .08, tch(6200 * J()))
+        return s.done(.2)
+    s.add(0, hum(.4), .5)
+    for i in range(6): s.add(i * .045, tch(rng.uniform(4500, 6000)), 1 - i * .1)
+    return s.done(.2)
+
+def hoopoe(ev):      # soft low 'oop-oop-oop', raspy 'schaar'
+    s = Seq(3)
+    oop = lambda f: voice(.12, [(0, f * .95), (1, f * 1.02)], harm=(1, .4, .1), a=.02, r=.06)
+    if ev == 'hs':
+        t = 0; f = 520 * J()
+        for rep in range(2):
+            for i in range(3): s.add(t, oop(f)); t += .18
+            t += .35
+        return s.done(.3, .2)
+    if ev == 'ten':
+        f = 520 * J()
+        for i in range(3): s.add(i * .18, oop(f))
+        return s.done(.3, .2)
+    s.add(0, voice(.45, [(0, 2000 * J()), (1, 1600)], tilt=.8, jit=.08, noise=.6, nb=(1000, 7000), a=.02, r=.1)); return s.done(.25)
+
+def roller(ev):      # harsh 'rack-kack' croaks, rolling dive cackle
+    s = Seq(3)
+    rack = lambda d, f: voice(d, [(0, f * 1.1), (1, f * .85)], tilt=.8, jit=.07, noise=.45, nb=(800, 6000), formants=[(1500, 900, 1), (3000, 1200, .5)], a=.005, r=.04)
+    if ev == 'hs':
+        t = 0
+        for i in range(10): s.add(t, rack(.09, 700 * (1 + .4 * np.sin(i * .9)) * J(.05))); t += .11
+        return s.done(.25)
+    if ev == 'ten':
+        s.add(0, rack(.12, 750 * J())); s.add(.16, rack(.14, 650 * J())); return s.done(.22)
+    s.add(0, rack(.5, 800 * J())); return s.done(.22)
+
+def cardinal(ev):    # clear 'cheer-cheer-cheer' / 'birdy-birdy', metallic 'chip'
+    s = Seq(3)
+    cheer = lambda f: voice(.2, [(0, f * 1.25), (1, f * .7)], harm=(1, .15), a=.01, r=.05)
+    chip = lambda f: voice(.035, [(0, f * 1.3), (1, f * .8)], harm=(1, .3), a=.002, r=.015)
+    if ev == 'hs':
+        t = 0; f = 3200 * J()
+        for i in range(4): s.add(t, cheer(f)); t += .26
+        for i in range(5): s.add(t, voice(.09, [(0, 2600), (.5, 4200), (1, 2800)], harm=(1, .15), a=.005, r=.03), .9); t += .12
+        return s.done(.25)
+    if ev == 'ten':
+        f = 3200 * J(); s.add(0, cheer(f)); s.add(.26, cheer(f)); return s.done(.22)
+    t = 0
+    for i in range(5): s.add(t, chip(6000 * J()), 1 - i * .08); t += .12
+    return s.done(.22)
+
+SP.update(puffin=puffin, quetzal=quetzal, shoebill=shoebill, peafowl=peafowl, snowyowl=snowyowl, hummingbird=hummingbird, hoopoe=hoopoe, roller=roller, cardinal=cardinal)
+
 # ------------------------------------------------------------------ heavy splash ('rock into water')
 def load(p, sr=SR):
     raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-ac', '1', '-ar', str(sr), '-f', 'f32le', '-'], capture_output=True).stdout
